@@ -61,6 +61,8 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
 
         int j = 0;
 
+        // encode tensor
+
         final int[] dimensions = tensor.getShape();
         float[] rgbBitmapAsFloat = loadRgbBitmapAsFloat(mImage);
 
@@ -83,6 +85,8 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
         mJavaExecuteTime = javaExecuteEnd - javaExecuteStart;
 
         Float[][] coordinates = new Float[17][2];
+
+        // decode tensor
 
         for (Map.Entry<String, FloatTensor> output : outputs.entrySet()) {
             if (output.getKey().equals(mOutputLayer)) {
