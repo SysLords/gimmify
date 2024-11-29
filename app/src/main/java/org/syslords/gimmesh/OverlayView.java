@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -27,7 +29,7 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
      */
     private boolean surfaceReady = false;
 
-    private static final int MAX_FRAME_TIME = (int) (1000.0 / 60.0);
+    private static final int MAX_FRAME_TIME = (int) (1000.0 / 120.0);
 
     SurfaceHolder holder;
 
@@ -36,10 +38,12 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
     {
         super(context, attrs);
         setWillNotDraw(false);
+        setZOrderOnTop(true);
         init();
 
         SurfaceHolder holder = getHolder();
         holder.addCallback(this);
+        holder.setFormat(PixelFormat.TRANSPARENT);
     }
 
     // Initialize paint object
@@ -57,9 +61,9 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
         if (coordinates == null)
             return;
 
-        for (int i = 0;i < 31;++i)
+        for (int i = 0;i < 17;++i)
         {
-            canvas.drawCircle(getWidth() * coordinates[i][0] ,getHeight() * coordinates[i][1], 5, paint);
+            canvas.drawCircle(getWidth() * coordinates[i][0] ,getHeight() * coordinates[i][1], 20, paint);
         }
         // canvas.drawCircle(getWidth() / 2, getHeight() / 2, 100, paint);
     }
@@ -137,19 +141,20 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
                 }
 
                 frameStartTime = System.nanoTime();
-                Canvas canvas = holder.lockCanvas();
 
 //                System.out.println("drawing");
+                Canvas canvas = holder.lockCanvas();
 
                 if (canvas != null)
                 {
                     // clear the screen using black
-                    canvas.drawARGB(0, 0, 0, 0);
+                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
+//                    canvas.drawARGB(0, 0, 0, 0);
 
                     try
                     {
 //                        System.out.println("drawing");
-                        for (int i = 0;i < 31 && coordinates != null;++i)
+                        for (int i = 0;i < 17 && coordinates != null;++i)
                         {
                             canvas.drawCircle(getWidth() * coordinates[i][0] ,getHeight() * coordinates[i][1], 20, paint);
                         }

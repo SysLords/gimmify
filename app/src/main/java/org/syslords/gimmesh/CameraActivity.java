@@ -8,8 +8,11 @@ import android.graphics.YuvImage;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -29,7 +32,11 @@ public class CameraActivity extends AppCompatActivity {
     SurfaceView surfaceView;
     OverlayView overlayView;
 
+    ImageView imageView;
+
     TextView inferenceTimeBox;
+
+    int i = 0;
 
     private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener() {
         @Override
@@ -38,48 +45,146 @@ public class CameraActivity extends AppCompatActivity {
             try {
                 image = reader.acquireLatestImage();
 
-                Image.Plane[] planes = image.getPlanes();
+                ++i;
 
-                // The Y (luminance) plane
-                ByteBuffer yBuffer = planes[0].getBuffer();
-                // The U (chrominance) plane
-                ByteBuffer uBuffer = planes[1].getBuffer();
-                // The V (chrominance) plane
-                ByteBuffer vBuffer = planes[2].getBuffer();
 
-                int ySize = yBuffer.remaining();
-                int uSize = uBuffer.remaining();
-                int vSize = vBuffer.remaining();
+//                if (image != null) {
+//                    image.close();
+//                    return;
+//                }
+//
+                if (image == null)
+                {
+                    return;
+                }
 
-                // Create byte arrays to hold the data
-                byte[] yBytes = new byte[ySize];
-                byte[] uBytes = new byte[uSize];
-                byte[] vBytes = new byte[vSize];
+                if (image != null && modelController.isInferencing)
+                {
+                    System.out.println("closing");
+                    image.close();
+                    return;
+                }
 
-                // Read the buffers into the byte arrays
-                yBuffer.get(yBytes);
-                uBuffer.get(uBytes);
-                vBuffer.get(vBytes);
+                System.out.println("processing");
 
-                // Convert YUV to RGB
-                int width = image.getWidth();
-                int height = image.getHeight();
-                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//                int width = image.getWidth();
+//                int height = image.getHeight();
+//
+//                Image.Plane[] planes = image.getPlanes();
+//                if (planes.length < 3) {
+//                    throw new IllegalStateException("Expected 3 planes for FLEX_RGB_888 format");
+//                }
+//
+//                // Get the byte buffers for each plane
+//                ByteBuffer redBuffer = planes[0].getBuffer(); // Red plane
+//                ByteBuffer greenBuffer = planes[1].getBuffer(); // Green plane
+//                ByteBuffer blueBuffer = planes[2].getBuffer(); // Blue plane
+//
+//                // Convert byte buffers to byte arrays
+//                byte[] redData = new byte[redBuffer.remaining()];
+//                byte[] greenData = new byte[greenBuffer.remaining()];
+//                byte[] blueData = new byte[blueBuffer.remaining()];
+//
+//                redBuffer.get(redData);
+//                greenBuffer.get(greenData);
+//                blueBuffer.get(blueData);
+//
+//                // Create an array to hold the pixels in ARGB format
+//                int[] pixels = new int[width * height];
+//
+//                // Iterate over the pixel data and convert RGB to ARGB
+//                int pixelIndex = 0;
+//                for (int i = 0; i < width * height; i++) {
+//                    // Get the RGB values from the byte arrays
+//                    int r = redData[i] & 0xFF;      // Red value from the red plane
+//                    int g = greenData[i] & 0xFF;    // Green value from the green plane
+//                    int b = blueData[i] & 0xFF;     // Blue value from the blue plane
+//
+//                    // Convert to ARGB format (set Alpha to 255 for full opacity)
+//                    pixels[pixelIndex] = (255 << 24) | (r << 16) | (g << 8) | b;
+//
+//                    pixelIndex++;
+//                }
+//
+//                // Create a Bitmap from the pixel data
+//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//                bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
 
-                // You can use a library like YuvImage to simplify YUV to Bitmap conversion
-                YuvImage yuvImage = new YuvImage(yBytes, ImageFormat.NV21, width, height, null);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                yuvImage.compressToJpeg(new Rect(0, 0, width, height), 100, baos);
-                byte[] jpegData = baos.toByteArray();
-                bitmap = BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
 
+
+
+                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
+
+                // Copy the data from the buffer into a byte array
+                byte[] byteArray = new byte[buffer.remaining()];
+                buffer.get(byteArray);
+
+                // Decode the byte array into a Bitmap
+                Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+//                Image.Plane[] planes = image.getPlanes();
+//
+//                // The Y (luminance) plane
+//                ByteBuffer yBuffer = planes[0].getBuffer();
+//                // The U (chrominance) plane
+//                ByteBuffer uBuffer = planes[1].getBuffer();
+//                // The V (chrominance) plane
+//                ByteBuffer vBuffer = planes[2].getBuffer();
+//
+//                int ySize = yBuffer.remaining();
+//                int uSize = uBuffer.remaining();
+//                int vSize = vBuffer.remaining();
+//
+//                // Create byte arrays to hold the data
+//                byte[] yBytes = new byte[ySize];
+//                byte[] uBytes = new byte[uSize];
+//                byte[] vBytes = new byte[vSize];
+//
+//                // Read the buffers into the byte arrays
+//                yBuffer.get(yBytes);
+//                uBuffer.get(uBytes);
+//                vBuffer.get(vBytes);
+//
+//                // Convert YUV to RGB
+//                int width = image.getWidth();
+//                int height = image.getHeight();
+//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//
+//                // You can use a library like YuvImage to simplify YUV to Bitmap conversion
+//                YuvImage yuvImage = new YuvImage(yBytes, ImageFormat.NV21, width, height, null);
+//                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//                yuvImage.compressToJpeg(new Rect(0, 0, width, height), 100, baos);
+//                byte[] jpegData = baos.toByteArray();
+//                bitmap = BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
+
+                if (i % 10 == 0)
+                {
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+
+// Inside a background thread or AsyncTask
+                    mainHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println("imageview");
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
+
+                            Bitmap newBitmap = ModelController.resizeBitmap(bitmap);
+
+                            imageView.setImageBitmap(newBitmap); // Update ImageView on UI thread
+                        }
+                    });
+
+                }
 
                 modelController.classify(bitmap);
+
+                 bitmap.recycle();
 
                 // Process the image here
 //                processImage(image);
             } finally {
                 if (image != null) {
+//                    System.out.println("closing");
                     image.close();
                 }
             }
@@ -100,6 +205,7 @@ public class CameraActivity extends AppCompatActivity {
 
         surfaceView = findViewById(R.id.surfaceView);
         overlayView = findViewById(R.id.overlayView);
+        imageView = findViewById(R.id.imageView);
 
         inferenceTimeBox = findViewById(R.id.inference_time_box);
 

@@ -6,6 +6,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.os.AsyncTask;
 
 import com.qualcomm.qti.snpe.FloatTensor;
@@ -27,6 +28,8 @@ public class ModelController {
 
     FloatTensor tensor;
 
+    public boolean isInferencing = true;
+
     ModelController(Context context, OverlayView overlayView) {
         this.context = context;
         this.overlayView = overlayView;
@@ -46,7 +49,7 @@ public class ModelController {
             return;
         }
 
-        runtime = NeuralNetwork.Runtime.GPU;
+        runtime = NeuralNetwork.Runtime.CPU;
 
         LoadNetworkTask mLoadTask = new LoadNetworkTask((Application) context.getApplicationContext(), this, stream, size, runtime);
 
@@ -68,26 +71,50 @@ public class ModelController {
 
         tensor = mNeuralNetwork.createFloatTensor(mNeuralNetwork.getInputTensorsShapes().get(mInputLayer));
         System.out.println(mLoadTime);
+        isInferencing = false;
     }
 
     public static Bitmap resizeBitmap(Bitmap bitmap) {
         // Load the bitmap from the given path
 
         // Resize the bitmap to 256x256
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 256, 256, true);
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 256, 192, true);
+
+        int width = resizedBitmap.getWidth();
+        int height = resizedBitmap.getHeight();
+
+        Bitmap rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
+
+        // Iterate over every pixel in the original bitmap and map it to the new position in the rotated bitmap
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                // Get the pixel from the original bitmap
+                int pixel = resizedBitmap.getPixel(x, y);
+
+                // Set the pixel to the new position in the rotated bitmap
+                // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
+                rotatedBitmap.setPixel(y, width - x - 1, pixel);
+            }
+        }
 
         // Optionally recycle the original bitmap if not needed
 //        if (bitmap != null && !bitmap.isRecycled()) {
 //            bitmap.recycle();
 //        }
 
-        return resizedBitmap;
+        resizedBitmap.recycle();
+
+        return rotatedBitmap;
     }
 
     public void classify(final Bitmap bitmap) {
         if (mNeuralNetwork != null) {
 
+            isInferencing = true;
+
             Bitmap newBitmap = resizeBitmap(bitmap);
+
+            bitmap.recycle();
 
             InferenceTask task = new InferenceTask(mNeuralNetwork, newBitmap, this, tensor);
             task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -99,6 +126,7 @@ public class ModelController {
     @SuppressLint("NewApi")
     public void onClassificationResult(Float[][] coordinates, long javaExecuteTime) {
 //        System.out.println(javaExecuteTime);
+        isInferencing = false;
         overlayView.drawCoordinates(coordinates);
         ((CameraActivity) context).inferenceTimeBox.setText(javaExecuteTime + "ms");
 //            view.setJavaExecuteStatistics(javaExecuteTime);

@@ -53,6 +53,10 @@ public class CameraUtils
 
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
+    private Handler mBackgroundHandler2;
+    private HandlerThread mBackgroundThread2;
+
+    ImageReader mImageReader;
 
     ImageReader.OnImageAvailableListener imageAvailableListener;
 
@@ -93,7 +97,7 @@ public class CameraUtils
 
 //        (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA));
 
-            Size previewSize = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.PRIVATE)[9]; // Get a suitable preview size
+            Size previewSize = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.PRIVATE)[19]; // Get a suitable preview size
 
 
             float deviation = Float.MAX_VALUE;
@@ -114,8 +118,8 @@ public class CameraUtils
                 dimension += "width " + size.getWidth() + " height " + size.getHeight() + "\n";
             }
 
-            int x = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.PRIVATE).length;
-            best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.PRIVATE)[10];
+            int x = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG).length;
+            best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[12];
 //            size = best;
             surfaceView.getHolder().setFixedSize(best.getWidth(), best.getHeight());
 //            s1.getHolder().setFixedSize(best.getWidth(), best.getHeight());
@@ -176,13 +180,15 @@ public class CameraUtils
 
             CameraManager manager = (CameraManager) context.getSystemService(CAMERA_SERVICE);
             CameraCharacteristics camera = manager.getCameraCharacteristics(lid);
-            Size best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.YUV_420_888)[10];
+            Size best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[12];
+
+            System.out.println("jped sige" + best.getWidth() + " " + best.getHeight());
 
 
-            ImageReader mImageReader = ImageReader.newInstance(best.getWidth(), best.getHeight(), ImageFormat.YUV_420_888, 3);
+            mImageReader = ImageReader.newInstance(best.getWidth(), best.getHeight(), ImageFormat.JPEG, 3);
             Surface mImageSurface = mImageReader.getSurface();
 
-            mImageReader.setOnImageAvailableListener(imageAvailableListener, mBackgroundHandler);
+            mImageReader.setOnImageAvailableListener(imageAvailableListener, mBackgroundHandler2);
 
             // captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
             long exposureTime = 100000000L;  // in nanoseconds (e.g., 100 ms)
@@ -264,7 +270,7 @@ public class CameraUtils
 
                     // createCameraPreviewSession;
 
-                    startPreview();
+//                    startPreview();
 
 //                    if (failure.wasImageCaptured())
 //                        showDialog("Image was captured");
@@ -290,7 +296,7 @@ public class CameraUtils
                     // showDialog("started at " + timestamp);
                 }
 
-            }, null);
+            }, mBackgroundHandler);
         } catch (Exception e) {
             // showDialog(Arrays.toString(e.getStackTrace()));
             e.printStackTrace();
@@ -301,5 +307,9 @@ public class CameraUtils
         mBackgroundThread = new HandlerThread("CameraBackground1");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
+
+        mBackgroundThread2 = new HandlerThread("CameraBackground1");
+        mBackgroundThread2.start();
+        mBackgroundHandler2 = new Handler(mBackgroundThread.getLooper());
     }
 }
