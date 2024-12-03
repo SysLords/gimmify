@@ -127,7 +127,7 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
                     // Loop over the height and width of the heatmap
                     for (int h = 0; h < height; h++) {
                         for (int w = 0; w < width; w++) {
-                            if (heatmap[h][w][c] > maxVal && heatmap[h][w][c] > 0.5) {
+                            if (heatmap[h][w][c] > maxVal) {
                                 maxVal = heatmap[h][w][c];
                                 maxX = w;  // x-coordinate
                                 maxY = h;  // y-coordinate
@@ -135,9 +135,11 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
                         }
                     }
 
+                    System.out.println(maxX + " " + maxY);
+
                     // Store the (x, y) coordinates of the most probable point for this channel
-                    coordinates[c][0] = maxX > 0 ? (float) ((int) maxX / 48) : -1;
-                    coordinates[c][1] = maxX > 0 ? (float) ((int) maxY / 64) : -1;
+                    coordinates[c][0] = maxX > 0 ? ((float) maxX / 48) : -1;
+                    coordinates[c][1] = maxX > 0 ? ((float) maxY / 64) : -1;
                 }
 
                 for (int i = 0; i < coordinates.length; i++) {

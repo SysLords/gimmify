@@ -119,7 +119,7 @@ public class CameraUtils
             }
 
             int x = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG).length;
-            best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[12];
+            best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[10];
 //            size = best;
             surfaceView.getHolder().setFixedSize(best.getWidth(), best.getHeight());
 //            s1.getHolder().setFixedSize(best.getWidth(), best.getHeight());
@@ -180,7 +180,7 @@ public class CameraUtils
 
             CameraManager manager = (CameraManager) context.getSystemService(CAMERA_SERVICE);
             CameraCharacteristics camera = manager.getCameraCharacteristics(lid);
-            Size best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[12];
+            Size best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[10];
 
             System.out.println("jped sige" + best.getWidth() + " " + best.getHeight());
 

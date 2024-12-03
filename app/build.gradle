@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 }
 
 allprojects {
@@ -40,17 +41,34 @@ android {
     aaptOptions {
         noCompress "dlc"
     }
+    kotlinOptions {
+        jvmTarget = '11'
+    }
 }
 
 dependencies {
 
     implementation(name: 'snpe-release', ext:'aar')
 
+    implementation 'com.google.mediapipe:tasks-vision:0.10.10'
+
+    def camerax_version = '1.2.0-alpha02'
+
+    implementation "androidx.camera:camera-core:$camerax_version"
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    implementation "androidx.camera:camera-view:$camerax_version"
+
+
+    implementation 'androidx.window:window:1.1.0-alpha03'
+
+
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
     implementation libs.constraintlayout
     implementation libs.org.apache.commons.io
+    implementation libs.core.ktx
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core

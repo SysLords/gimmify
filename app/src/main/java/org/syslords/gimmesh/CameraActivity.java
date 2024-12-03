@@ -2,9 +2,7 @@ package org.syslords.gimmesh;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
+import android.graphics.ColorSpace;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
@@ -15,17 +13,18 @@ import android.view.SurfaceView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import java.io.ByteArrayOutputStream;
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
+import com.google.mediapipe.tasks.vision.core.RunningMode;
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
+
 import java.nio.ByteBuffer;
+import java.util.List;
 
-public class CameraActivity extends AppCompatActivity {
+public class CameraActivity extends AppCompatActivity
+{
 
     ModelController modelController;
 
@@ -36,13 +35,61 @@ public class CameraActivity extends AppCompatActivity {
 
     TextView inferenceTimeBox;
 
+    PoseLandmarkerHelper poseLandmarkerHelper;
+
     int i = 0;
 
-    private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener() {
+
+    PoseLandmarkerHelper.LandmarkerListener landmarkerListener = new PoseLandmarkerHelper.LandmarkerListener()
+    {
         @Override
-        public void onImageAvailable(ImageReader reader) {
+        public void onError(@NonNull String error, int errorCode)
+        {
+
+        }
+
+        @Override
+        public void onResults(@NonNull PoseLandmarkerHelper.ResultBundle resultBundle)
+        {
+            System.out.println("result got");
+
+            Float[][] coordinates = new Float[33][2];
+
+            int x = 0;
+
+            for (List<NormalizedLandmark> result : resultBundle.getResults().get(0).landmarks())
+            {
+                for (NormalizedLandmark landmark : result)
+                {
+//                    System.out.println(x + " " + landmark.x() + " " + landmark.y());
+                    coordinates[x][0] = landmark.x();
+                    coordinates[x][1] = landmark.y();
+                    ++x;
+                }
+            }
+
+            try
+            {
+
+                overlayView.drawCoordinates(coordinates);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
+
+            modelController.isInferencing = false;
+        }
+    };
+
+    private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener()
+    {
+        @Override
+        public void onImageAvailable(ImageReader reader)
+        {
             Image image = null;
-            try {
+            try
+            {
                 image = reader.acquireLatestImage();
 
                 ++i;
@@ -60,12 +107,14 @@ public class CameraActivity extends AppCompatActivity {
 
                 if (image != null && modelController.isInferencing)
                 {
-                    System.out.println("closing");
+//                    System.out.println("closing");
                     image.close();
                     return;
                 }
 
-                System.out.println("processing");
+                modelController.isInferencing = true;
+
+//                System.out.println("processing");
 
 //                int width = image.getWidth();
 //                int height = image.getHeight();
@@ -109,8 +158,6 @@ public class CameraActivity extends AppCompatActivity {
 //                // Create a Bitmap from the pixel data
 //                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
 //                bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-
 
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -162,9 +209,11 @@ public class CameraActivity extends AppCompatActivity {
                     Handler mainHandler = new Handler(Looper.getMainLooper());
 
 // Inside a background thread or AsyncTask
-                    mainHandler.post(new Runnable() {
+                    mainHandler.post(new Runnable()
+                    {
                         @Override
-                        public void run() {
+                        public void run()
+                        {
                             System.out.println("imageview");
                             Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
@@ -176,14 +225,19 @@ public class CameraActivity extends AppCompatActivity {
 
                 }
 
-                modelController.classify(bitmap);
+//                modelController.classify(bitmap);
 
-                 bitmap.recycle();
+                poseLandmarkerHelper.detectLiveStream(bitmap, false);
+
+//                bitmap.recycle();
 
                 // Process the image here
 //                processImage(image);
-            } finally {
-                if (image != null) {
+            }
+            finally
+            {
+                if (image != null)
+                {
 //                    System.out.println("closing");
                     image.close();
                 }
@@ -192,7 +246,8 @@ public class CameraActivity extends AppCompatActivity {
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
 //        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_camera);
@@ -210,23 +265,39 @@ public class CameraActivity extends AppCompatActivity {
         inferenceTimeBox = findViewById(R.id.inference_time_box);
 
         modelController = new ModelController(this, overlayView);
-        modelController.loadModel();
+        modelController.isInferencing = false;
+//        modelController.loadModel();
 
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+        poseLandmarkerHelper = new PoseLandmarkerHelper(
+                0.5f,
+                0.5f,
+                0.5f,
+                PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
+                PoseLandmarkerHelper.DELEGATE_CPU,
+                RunningMode.LIVE_STREAM,
+                this,
+                landmarkerListener
+        );
+
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback()
+        {
             @Override
-            public void surfaceCreated(@NonNull SurfaceHolder holder) {
+            public void surfaceCreated(@NonNull SurfaceHolder holder)
+            {
                 CameraUtils cameraUtils = new CameraUtils(CameraActivity.this, surfaceView, imageAvailableListener);
                 cameraUtils.startBackgroundThread();
                 cameraUtils.openCamera();
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height)
+            {
 
             }
 
             @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
+            public void surfaceDestroyed(@NonNull SurfaceHolder holder)
+            {
 
             }
         });

@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-sdk tools:overrideLibrary="com.google.mediapipe.tasks.core, com.google.mediapipe.tasks.vision" />
+
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
@@ -17,11 +19,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Gimmesh"
         tools:targetApi="31">
+
         <activity
-            android:name=".CameraActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,10 +30,20 @@
             </intent-filter>
         </activity>
 
-        <uses-library android:name="libOpenCL.so"
-            android:required="false"/>
-        <uses-library android:name="libcdsprpc.so"
-            android:required="false"/>
+        <activity
+            android:name=".CameraActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" />
+
+        <uses-library
+            android:name="libOpenCL.so"
+            android:required="false" />
+        <uses-library
+            android:name="libcdsprpc.so"
+            android:required="false" />
 
     </application>
 
