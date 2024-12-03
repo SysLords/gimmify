@@ -21,16 +21,25 @@
         android:background="@android:color/transparent"
         app:elevation="0dp">
 
-        <TextView
-            android:id="@+id/title"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="15dp"
-            android:text="Begin Your\nFitness Journey"
-            android:textColor="@color/text_primary"
-            android:textSize="32sp"
-            android:textStyle="bold"
-            android:fontFamily="@font/product_sans_bold"/>
+            android:layout_height="105dp"
+            android:background="@android:color/transparent"
+            app:contentInsetStart="0dp"
+            app:contentInsetStartWithNavigation="0dp">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/product_sans_bold"
+                android:text="Begin Your\nFitness Journey"
+                android:textColor="@color/text_primary"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+        </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -192,6 +201,7 @@
                 android:id="@+id/card_pushup"
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
+                android:layout_marginBottom="11dp"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="4dp">
 
@@ -227,6 +237,53 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="5 sets • 20 reps"
+                            android:textColor="#FFFFFF"
+                            android:alpha="0.8"
+                            android:fontFamily="@font/product_sans"/>
+                    </LinearLayout>
+                </RelativeLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_suryanamaskara"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginBottom="11dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/suryanamaskara"
+                        android:alpha="0.8"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:background="@drawable/gradient_overlay"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Suryanamaskara"
+                            android:textColor="#FFFFFF"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:fontFamily="@font/product_sans_bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10 sets • 30 sec"
                             android:textColor="#FFFFFF"
                             android:alpha="0.8"
                             android:fontFamily="@font/product_sans"/>

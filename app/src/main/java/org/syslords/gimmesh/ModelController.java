@@ -74,14 +74,14 @@ public class ModelController {
         isInferencing = false;
     }
 
-    public static Bitmap resizeBitmap(Bitmap bitmap) {
+    public static Bitmap resizeBitmap(Bitmap bitmap, int width, int height) {
         // Load the bitmap from the given path
 
         // Resize the bitmap to 256x256
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 256, 192, true);
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
 
-        int width = resizedBitmap.getWidth();
-        int height = resizedBitmap.getHeight();
+//        int width = resizedBitmap.getWidth();
+//        int height = resizedBitmap.getHeight();
 
 //        Bitmap rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
 //
@@ -112,7 +112,7 @@ public class ModelController {
 
             isInferencing = true;
 
-            Bitmap newBitmap = resizeBitmap(bitmap);
+            Bitmap newBitmap = resizeBitmap(bitmap, 224, 224);
 
             bitmap.recycle();
 

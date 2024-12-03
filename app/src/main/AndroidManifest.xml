@@ -21,6 +21,15 @@
         tools:targetApi="31">
 
         <activity
+            android:name=".YogaActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="Settings"/>
+
+        <activity
             android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
@@ -33,7 +42,6 @@
         <activity
             android:name=".CameraActivity"
             android:exported="false" />
-
         <activity
             android:name=".MainActivity"
             android:exported="true" />
@@ -44,7 +52,6 @@
         <uses-library
             android:name="libcdsprpc.so"
             android:required="false" />
-
     </application>
 
 </manifest>

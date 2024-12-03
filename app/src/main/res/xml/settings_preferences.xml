@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="Performance Settings">
+
+        <ListPreference
+            android:key="inference_mode"
+            android:title="Inference Mode"
+            android:summary="Select processing mode"
+            android:entries="@array/inference_modes"
+            android:entryValues="@array/inference_mode_values"
+            android:defaultValue="gpu"/>
+
+        <SwitchPreference
+            android:key="debug_mode"
+            android:title="Debug Mode"
+            android:summary="Enable detailed logging"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

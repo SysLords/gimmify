@@ -218,31 +218,12 @@ public class CameraActivity extends AppCompatActivity
 //                byte[] jpegData = baos.toByteArray();
 //                bitmap = BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
 
-                if (i % 10 == 0)
-                {
-                    Handler mainHandler = new Handler(Looper.getMainLooper());
 
-// Inside a background thread or AsyncTask
-                    mainHandler.post(new Runnable()
-                    {
-                        @Override
-                        public void run()
-                        {
-                            System.out.println("imageview");
-                            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-
-                            Bitmap newBitmap = ModelController.resizeBitmap(bitmap);
-
-                            imageView.setImageBitmap(newBitmap); // Update ImageView on UI thread
-                        }
-                    });
-
-                }
 
 //                modelController.classify(bitmap);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256), false);
 
 //                bitmap.recycle();
 
@@ -288,7 +269,7 @@ public class CameraActivity extends AppCompatActivity
                 0.5f,
                 0.5f,
                 PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
-                PoseLandmarkerHelper.DELEGATE_GPU,
+                PoseLandmarkerHelper.DELEGATE_CPU,
                 RunningMode.LIVE_STREAM,
                 this,
                 landmarkerListener

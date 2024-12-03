@@ -102,49 +102,51 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
 
                 System.out.println(" " + array.length);
 
-                int height = 64;
-                int width = 48;
-                int channels = 17;
 
-                float[][][] heatmap = new float[height][width][channels];
 
-// Fill the 3D heatmap with values from the flattened array
-                int index = 0;
-                for (int h = 0; h < height; h++) {
-                    for (int w = 0; w < width; w++) {
-                        for (int c = 0; c < channels; c++) {
-                            heatmap[h][w][c] = array[index++];
-                        }
-                    }
-                }
+//                int height = 64;
+//                int width = 48;
+//                int channels = 17;
 
-                // Loop over each channel
-                for (int c = 0; c < channels; c++) {
-                    float maxVal = Float.MIN_VALUE;
-                    int maxX = -1;
-                    int maxY = -1;
+//                float[][][] heatmap = new float[height][width][channels];
 
-                    // Loop over the height and width of the heatmap
-                    for (int h = 0; h < height; h++) {
-                        for (int w = 0; w < width; w++) {
-                            if (heatmap[h][w][c] > maxVal) {
-                                maxVal = heatmap[h][w][c];
-                                maxX = w;  // x-coordinate
-                                maxY = h;  // y-coordinate
-                            }
-                        }
-                    }
-
-                    System.out.println(maxX + " " + maxY);
-
-                    // Store the (x, y) coordinates of the most probable point for this channel
-                    coordinates[c][0] = maxX > 0 ? ((float) maxX / 48) : -1;
-                    coordinates[c][1] = maxX > 0 ? ((float) maxY / 64) : -1;
-                }
-
-                for (int i = 0; i < coordinates.length; i++) {
-                    System.out.println("Channel " + i + ": x = " + coordinates[i][0] + ", y = " + coordinates[i][1]);
-                }
+//// Fill the 3D heatmap with values from the flattened array
+//                int index = 0;
+//                for (int h = 0; h < height; h++) {
+//                    for (int w = 0; w < width; w++) {
+//                        for (int c = 0; c < channels; c++) {
+//                            heatmap[h][w][c] = array[index++];
+//                        }
+//                    }
+//                }
+//
+//                // Loop over each channel
+//                for (int c = 0; c < channels; c++) {
+//                    float maxVal = Float.MIN_VALUE;
+//                    int maxX = -1;
+//                    int maxY = -1;
+//
+//                    // Loop over the height and width of the heatmap
+//                    for (int h = 0; h < height; h++) {
+//                        for (int w = 0; w < width; w++) {
+//                            if (heatmap[h][w][c] > maxVal) {
+//                                maxVal = heatmap[h][w][c];
+//                                maxX = w;  // x-coordinate
+//                                maxY = h;  // y-coordinate
+//                            }
+//                        }
+//                    }
+//
+//                    System.out.println(maxX + " " + maxY);
+//
+//                    // Store the (x, y) coordinates of the most probable point for this channel
+//                    coordinates[c][0] = maxX > 0 ? ((float) maxX / 48) : -1;
+//                    coordinates[c][1] = maxX > 0 ? ((float) maxY / 64) : -1;
+//                }
+//
+//                for (int i = 0; i < coordinates.length; i++) {
+//                    System.out.println("Channel " + i + ": x = " + coordinates[i][0] + ", y = " + coordinates[i][1]);
+//                }
 
 
 //                for (int i = 0; i < 17; ++i) {
@@ -209,10 +211,10 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
         image.getPixels(pixels, 0, image.getWidth(), 0, 0,
                 image.getWidth(), image.getHeight());
 
-        for (int i = 0;i < pixels.length;++i)
-        {
-//            System.out.println(pixels[i]);
-        }
+//        for (int i = 0;i < pixels.length;++i)
+//        {
+////            System.out.println(pixels[i]);
+//        }
 
         final float[] pixelsBatched = new float[pixels.length * 3];
         for (int y = 0; y < image.getHeight(); y++) {
