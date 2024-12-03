@@ -83,10 +83,28 @@ public class MainActivity extends AppCompatActivity {
 
         cardPushup.setClickable(true);
         cardPushup.setFocusable(true);
+
+        cardSuryanamaskara.setClickable(true);
+        cardSuryanamaskara.setFocusable(true);
     }
 
     private void startCameraActivity(String yogaSet) {
-        Intent intent = new Intent(this, CameraActivity.class);
+        Intent intent;
+        if(yogaSet.equalsIgnoreCase("Plank")){
+            intent = new Intent(this, PlankActivity.class);
+        }
+        else if(yogaSet.equalsIgnoreCase("Squat")){
+            intent = new Intent(this, SquatActivity.class);
+        }
+        else if(yogaSet.equalsIgnoreCase("BicepCurls")){
+            intent = new Intent(this, CurlActivity.class);
+        }
+        else if(yogaSet.equalsIgnoreCase("Pushup")){
+            intent = new Intent(this, PushupActivity.class);
+        }
+        else{
+            intent = new Intent(this, YogaActivity.class);
+        }
         intent.putExtra("EXERCISE", yogaSet);
         startActivity(intent);
     }
