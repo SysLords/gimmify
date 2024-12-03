@@ -39,6 +39,9 @@ public class CameraActivity extends AppCompatActivity
 
     int i = 0;
 
+    long inferenceStart;
+    long inferenceEnd;
+
 
     PoseLandmarkerHelper.LandmarkerListener landmarkerListener = new PoseLandmarkerHelper.LandmarkerListener()
     {
@@ -70,15 +73,26 @@ public class CameraActivity extends AppCompatActivity
 
             try
             {
-
+                modelController.isInferencing = false;
                 overlayView.drawCoordinates(coordinates);
+
+                inferenceEnd = System.currentTimeMillis();
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Code to execute on the UI thread
+                        inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
+                    }
+                });
+
+
+                System.out.println(inferenceEnd - inferenceStart);
             }
             catch (Exception e)
             {
                 e.printStackTrace();
             }
-
-            modelController.isInferencing = false;
         }
     };
 
@@ -227,7 +241,8 @@ public class CameraActivity extends AppCompatActivity
 
 //                modelController.classify(bitmap);
 
-                poseLandmarkerHelper.detectLiveStream(bitmap, false);
+                inferenceStart = System.currentTimeMillis();
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap), false);
 
 //                bitmap.recycle();
 
@@ -273,7 +288,7 @@ public class CameraActivity extends AppCompatActivity
                 0.5f,
                 0.5f,
                 PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
-                PoseLandmarkerHelper.DELEGATE_CPU,
+                PoseLandmarkerHelper.DELEGATE_GPU,
                 RunningMode.LIVE_STREAM,
                 this,
                 landmarkerListener

@@ -75,6 +75,7 @@ class PoseLandmarkerHelper(
             DELEGATE_CPU -> {
                 baseOptionBuilder.setDelegate(Delegate.CPU)
             }
+
             DELEGATE_GPU -> {
                 baseOptionBuilder.setDelegate(Delegate.GPU)
             }
@@ -99,6 +100,7 @@ class PoseLandmarkerHelper(
                     )
                 }
             }
+
             else -> {
                 // no-op
             }

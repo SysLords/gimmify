@@ -83,28 +83,28 @@ public class ModelController {
         int width = resizedBitmap.getWidth();
         int height = resizedBitmap.getHeight();
 
-        Bitmap rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
-
-        // Iterate over every pixel in the original bitmap and map it to the new position in the rotated bitmap
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                // Get the pixel from the original bitmap
-                int pixel = resizedBitmap.getPixel(x, y);
-
-                // Set the pixel to the new position in the rotated bitmap
-                // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
-                rotatedBitmap.setPixel(y, width - x - 1, pixel);
-            }
-        }
+//        Bitmap rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
+//
+//        // Iterate over every pixel in the original bitmap and map it to the new position in the rotated bitmap
+//        for (int x = 0; x < width; x++) {
+//            for (int y = 0; y < height; y++) {
+//                // Get the pixel from the original bitmap
+//                int pixel = resizedBitmap.getPixel(x, y);
+//
+//                // Set the pixel to the new position in the rotated bitmap
+//                // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
+//                rotatedBitmap.setPixel(y, width - x - 1, pixel);
+//            }
+//        }
 
         // Optionally recycle the original bitmap if not needed
 //        if (bitmap != null && !bitmap.isRecycled()) {
 //            bitmap.recycle();
 //        }
 
-        resizedBitmap.recycle();
+//        resizedBitmap.recycle();
 
-        return rotatedBitmap;
+        return resizedBitmap;
     }
 
     public void classify(final Bitmap bitmap) {
