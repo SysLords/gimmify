@@ -249,7 +249,7 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
                 float grayscale = ((pixel >> 16) & 0xFF);
                 pixelsBatched[batchIdx] = grayscale / 255;
 
-                System.out.println(grayscale);
+//                System.out.println(grayscale);
 
                 grayscale = ((pixel >>  8) & 0xFF);
                 pixelsBatched[batchIdx + 1] = grayscale / 255;

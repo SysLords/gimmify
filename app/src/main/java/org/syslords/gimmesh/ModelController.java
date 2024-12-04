@@ -3,9 +3,12 @@ package org.syslords.gimmesh;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+
+import androidx.preference.PreferenceManager;
 
 import com.qualcomm.qti.snpe.FloatTensor;
 import com.qualcomm.qti.snpe.NeuralNetwork;
@@ -47,7 +50,23 @@ public class ModelController {
             return;
         }
 
-        runtime = NeuralNetwork.Runtime.CPU;
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String inferenceModeString = sharedPreferences.getString("inference_mode", "cpu");
+
+        System.out.println(inferenceModeString);
+
+        if (inferenceModeString.equals("cpu"))
+        {
+            runtime = NeuralNetwork.Runtime.CPU;
+        }
+        else if (inferenceModeString.equals("gpu"))
+        {
+            runtime = NeuralNetwork.Runtime.GPU;
+        }
+        else if (inferenceModeString.equals("dsp"))
+        {
+            runtime = NeuralNetwork.Runtime.DSP;
+        }
 
         LoadNetworkTask mLoadTask = new LoadNetworkTask((Application) context.getApplicationContext(), this, stream, size, runtime);
 

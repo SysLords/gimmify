@@ -1,5 +1,6 @@
 package org.syslords.gimmesh;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.preference.PreferenceManager;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
@@ -386,6 +388,22 @@ public class PushupActivity extends AppCompatActivity
 //            return insets;
 //        });
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String inferenceModeString = sharedPreferences.getString("inference_mode", "cpu");
+
+        System.out.println(inferenceModeString);
+
+        int inferenceMode = 0;
+
+        if (inferenceModeString.equals("cpu"))
+        {
+            inferenceMode = 0;
+        }
+        else if (inferenceModeString.equals("gpu"))
+        {
+            inferenceMode = 1;
+        }
+
         surfaceView = findViewById(R.id.surfaceView);
         overlayView = findViewById(R.id.overlayView);
         imageView = findViewById(R.id.imageView);
@@ -403,7 +421,7 @@ public class PushupActivity extends AppCompatActivity
                 0.5f,
                 0.5f,
                 PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
-                PoseLandmarkerHelper.DELEGATE_CPU,
+                inferenceMode,
                 RunningMode.LIVE_STREAM,
                 this,
                 landmarkerListener
