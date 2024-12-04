@@ -141,11 +141,8 @@ public class ModelController {
 
             isInferencing = true;
 
-            Bitmap newBitmap = resizeBitmap(bitmap, 224, 224, 90);
-
-            bitmap.recycle();
-
-            InferenceTask task = new InferenceTask(mNeuralNetwork, newBitmap, this, tensor);
+            InferenceTask task = new InferenceTask(mNeuralNetwork, bitmap, this, tensor);
+//            bitmap.recycle();
             task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         } else {
             System.out.println("No neural Network");
