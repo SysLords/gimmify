@@ -19,9 +19,6 @@ public class SplashActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash); // Ensure this matches your layout file name
 
-        mediaPlayer = MediaPlayer.create(this, R.raw.splash_sound); // Place the sound file in res/raw folder
-        mediaPlayer.start();
-
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
