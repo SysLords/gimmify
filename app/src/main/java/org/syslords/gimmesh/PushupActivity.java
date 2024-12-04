@@ -9,6 +9,7 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.speech.tts.TextToSpeech;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
@@ -24,6 +25,9 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import android.speech.tts.TextToSpeech;
 
 public class PushupActivity extends AppCompatActivity
 {
@@ -35,6 +39,7 @@ public class PushupActivity extends AppCompatActivity
     private TextView pushupCountBox;
     private TextView formFeedbackBox;
     private TextView performanceBox;
+    private TextToSpeech textToSpeech;
 
     private enum PushupState {
         STARTING,
@@ -118,6 +123,12 @@ public class PushupActivity extends AppCompatActivity
             }
         }
     };
+
+    private void speakText(String text) {
+        if (textToSpeech != null) {
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+    }
     private double calculateAngle(Float[] point1, Float[] point2, Float[] point3) throws Exception {
         // Calculate vectors
 
@@ -250,19 +261,31 @@ public class PushupActivity extends AppCompatActivity
         }
     }
 
+    private long lastFeedbackTime = 0; // Tracks the last feedback time
+    private static final long FEEDBACK_INTERVAL = 10000; // Minimum interval in milliseconds
+
     private void updateUserInterface() {
+        long currentTime = System.currentTimeMillis();
+
         runOnUiThread(() -> {
             // Update push-up count
             pushupCountBox.setText("Push-ups: " + pushupCount);
 
-            // Detailed form feedback
-            if (formViolations.isEmpty()) {
-                formFeedbackBox.setText("Perfect Form!");
-                formFeedbackBox.setTextColor(Color.GREEN);
-            } else {
-                String feedback = "Form Issues:\n" + String.join("\n", formViolations);
-                formFeedbackBox.setText(feedback);
-                formFeedbackBox.setTextColor(Color.RED);
+            // Only provide feedback if the minimum interval has passed
+            if (currentTime - lastFeedbackTime >= FEEDBACK_INTERVAL) {
+                // Detailed form feedback
+                if (formViolations.isEmpty()) {
+                    formFeedbackBox.setText("Perfect Form!");
+                    speakText("Perfect form!");
+                    formFeedbackBox.setTextColor(Color.GREEN);
+                } else {
+                    String feedback = "Form Issues:\n" + String.join("\n", formViolations);
+                    speakText(String.join("\n", formViolations));
+                    formFeedbackBox.setText(feedback);
+                    formFeedbackBox.setTextColor(Color.RED);
+                }
+                // Update the last feedback time
+                lastFeedbackTime = currentTime;
             }
 
             // Performance tracking
@@ -408,6 +431,31 @@ public class PushupActivity extends AppCompatActivity
             }
         });
 
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    // TTS is successfully initialized
+                    int result = textToSpeech.setLanguage(Locale.US);
+                    if (result == TextToSpeech.LANG_MISSING_DATA ||
+                            result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        System.out.println("Language not supported");
+                    }
+                } else {
+                    System.out.println("Initialization failed");
+                }
+            }
+        });
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
     }
 
 

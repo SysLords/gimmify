@@ -22,6 +22,9 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Locale;
+
+import android.speech.tts.TextToSpeech;
 
 public class CurlActivity extends AppCompatActivity
 {
@@ -36,6 +39,8 @@ public class CurlActivity extends AppCompatActivity
     TextView inferenceTimeBox;
 
     PoseLandmarkerHelper poseLandmarkerHelper;
+
+    private TextToSpeech textToSpeech;
 
     int i = 0;
 
@@ -95,6 +100,12 @@ public class CurlActivity extends AppCompatActivity
             }
         }
     };
+
+    private void speakText(String text) {
+        if (textToSpeech != null) {
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+    }
 
     private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener()
     {
@@ -298,7 +309,31 @@ public class CurlActivity extends AppCompatActivity
             }
         });
 
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    // TTS is successfully initialized
+                    int result = textToSpeech.setLanguage(Locale.US);
+                    if (result == TextToSpeech.LANG_MISSING_DATA ||
+                            result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        System.out.println("Language not supported");
+                    }
+                } else {
+                    System.out.println("Initialization failed");
+                }
+            }
+        });
+
     }
 
+    @Override
+    protected void onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
+    }
 
 }
