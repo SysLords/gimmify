@@ -112,7 +112,7 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
 
                 for (int i = 0; i < 16; ++i)
                 {
-                    System.out.println(i + " " + array[i]);
+//                    System.out.println(i + " " + array[i]);
                     if (max < array[i])
                     {
                         x = i;

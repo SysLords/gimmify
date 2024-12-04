@@ -54,7 +54,7 @@ public class CameraActivity extends AppCompatActivity
         @Override
         public void onResults(@NonNull PoseLandmarkerHelper.ResultBundle resultBundle)
         {
-            System.out.println("result got");
+//            System.out.println("result got");
 
             Float[][] coordinates = new Float[33][2];
 

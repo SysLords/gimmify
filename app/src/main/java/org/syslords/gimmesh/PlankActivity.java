@@ -1,5 +1,6 @@
 package org.syslords.gimmesh;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorSpace;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.preference.PreferenceManager;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
@@ -165,6 +167,10 @@ public class PlankActivity extends AppCompatActivity
 //            return insets;
 //        });
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int inferenceMode = sharedPreferences.getInt("inference_mode_values", 0);
+
+        System.out.println(inferenceMode);
 
         surfaceView = findViewById(R.id.surfaceView);
         overlayView = findViewById(R.id.overlayView);
@@ -181,7 +187,7 @@ public class PlankActivity extends AppCompatActivity
                 0.5f,
                 0.5f,
                 PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
-                PoseLandmarkerHelper.DELEGATE_CPU,
+                inferenceMode,
                 RunningMode.LIVE_STREAM,
                 this,
                 landmarkerListener

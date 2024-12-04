@@ -6,9 +6,9 @@
         <item>DSP</item>
     </string-array>
 
-    <string-array name="inference_mode_values">
-        <item>gpu</item>
-        <item>cpu</item>
-        <item>dsp</item>
-    </string-array>
+    <integer-array name="inference_mode_values">
+        <item>1</item>
+        <item>0</item>
+        <item>2</item>
+    </integer-array>
 </resources>

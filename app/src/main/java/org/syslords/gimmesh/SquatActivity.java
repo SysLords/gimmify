@@ -87,7 +87,7 @@ public class SquatActivity extends AppCompatActivity
                 });
 
 
-                System.out.println(inferenceEnd - inferenceStart);
+//                System.out.println(inferenceEnd - inferenceStart);
             }
             catch (Exception e)
             {
