@@ -82,15 +82,12 @@ public class CurlActivity extends AppCompatActivity {
             }
 
             try {
+                inferenceEnd = System.currentTimeMillis();
+
                 analyzeBicepCurlForm(coordinates);
                 modelController.isInferencing = false;
                 overlayView.drawCoordinates(coordinates);
 
-                inferenceEnd = System.currentTimeMillis();
-
-                runOnUiThread(() -> {
-                    inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
-                });
             } catch (Exception e) {
                 modelController.isInferencing = false;
                 e.printStackTrace();
@@ -255,6 +252,8 @@ public class CurlActivity extends AppCompatActivity {
                     currentState.toString(),
                     totalCurls
             ));
+
+            inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
         });
     }
 

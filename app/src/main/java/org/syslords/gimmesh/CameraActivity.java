@@ -80,14 +80,6 @@ public class CameraActivity extends AppCompatActivity
 
                 inferenceEnd = System.currentTimeMillis();
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Code to execute on the UI thread
-                        inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
-                    }
-                });
-
 
                 System.out.println(inferenceEnd - inferenceStart);
             }

@@ -87,15 +87,11 @@ public class SquatActivity extends AppCompatActivity {
             }
 
             try {
+                inferenceEnd = System.currentTimeMillis();
                 analyzeSquatForm(coordinates);
                 modelController.isInferencing = false;
                 overlayView.drawCoordinates(coordinates);
 
-                inferenceEnd = System.currentTimeMillis();
-
-                runOnUiThread(() -> {
-                    inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
-                });
             } catch (Exception e) {
                 modelController.isInferencing = false;
                 e.printStackTrace();
@@ -248,6 +244,7 @@ public class SquatActivity extends AppCompatActivity {
                     currentState.toString(),
                     totalSquats
             ));
+            inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
         });
     }
 
