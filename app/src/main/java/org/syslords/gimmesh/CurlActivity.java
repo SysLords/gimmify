@@ -3,12 +3,11 @@ package org.syslords.gimmesh;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.ColorSpace;
+import android.graphics.Color;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
+import android.speech.tts.TextToSpeech;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
@@ -16,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.preference.PreferenceManager;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
@@ -23,81 +23,76 @@ import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import android.speech.tts.TextToSpeech;
+public class CurlActivity extends AppCompatActivity {
+    private int curlCount = 0;
+    private int totalCurls = 0;
+    private CurlState currentState = CurlState.STARTING;
+    private List<String> formViolations = new ArrayList<>();
 
-public class CurlActivity extends AppCompatActivity
-{
+    private TextView curlCountBox;
+    private TextView formFeedbackBox;
+    private TextView performanceBox;
+    private TextToSpeech textToSpeech;
 
+    private enum CurlState {
+        STARTING,         // Initial position
+        DESCENDING,       // Lowering the weight
+        BOTTOM_POSITION,  // Lowest point of curl
+        ASCENDING,        // Lifting the weight
+        TOP_POSITION      // Fully contracted bicep
+    }
+
+    private long lastStateChangeTime = 0;
+    private static final long MIN_CURL_DURATION = 500;  // Minimum time between state changes
+    private static final long MAX_CURL_DURATION = 3000;
     ModelController modelController;
 
     SurfaceView surfaceView;
     OverlayView overlayView;
-
     ImageView imageView;
-
     TextView inferenceTimeBox;
 
     PoseLandmarkerHelper poseLandmarkerHelper;
 
-    private TextToSpeech textToSpeech;
-
     int i = 0;
-
     long inferenceStart;
     long inferenceEnd;
 
-
-    PoseLandmarkerHelper.LandmarkerListener landmarkerListener = new PoseLandmarkerHelper.LandmarkerListener()
-    {
+    PoseLandmarkerHelper.LandmarkerListener landmarkerListener = new PoseLandmarkerHelper.LandmarkerListener() {
         @Override
-        public void onError(@NonNull String error, int errorCode)
-        {
-
+        public void onError(@NonNull String error, int errorCode) {
+            // Error handling
         }
 
         @Override
-        public void onResults(@NonNull PoseLandmarkerHelper.ResultBundle resultBundle)
-        {
-            System.out.println("result got");
-
+        public void onResults(@NonNull PoseLandmarkerHelper.ResultBundle resultBundle) {
             Float[][] coordinates = new Float[33][2];
 
             int x = 0;
-
-            for (List<NormalizedLandmark> result : resultBundle.getResults().get(0).landmarks())
-            {
-                for (NormalizedLandmark landmark : result)
-                {
-//                    System.out.println(x + " " + landmark.x() + " " + landmark.y());
+            for (List<NormalizedLandmark> result : resultBundle.getResults().get(0).landmarks()) {
+                for (NormalizedLandmark landmark : result) {
                     coordinates[x][0] = landmark.x();
                     coordinates[x][1] = landmark.y();
                     ++x;
                 }
             }
 
-            try
-            {
+            try {
+                analyzeBicepCurlForm(coordinates);
                 modelController.isInferencing = false;
                 overlayView.drawCoordinates(coordinates);
 
                 inferenceEnd = System.currentTimeMillis();
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Code to execute on the UI thread
-                        inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
-                    }
+                runOnUiThread(() -> {
+                    inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
                 });
-
-
-                System.out.println(inferenceEnd - inferenceStart);
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
+                modelController.isInferencing = false;
                 e.printStackTrace();
             }
         }
@@ -109,113 +104,200 @@ public class CurlActivity extends AppCompatActivity
         }
     }
 
-    private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener()
-    {
+    private double calculateAngle(Float[] point1, Float[] point2, Float[] point3) {
+        double vector1x = point1[0] - point2[0];
+        double vector1y = point1[1] - point2[1];
+        double vector2x = point3[0] - point2[0];
+        double vector2y = point3[1] - point2[1];
+
+        double dotProduct = (vector1x * vector2x) + (vector1y * vector2y);
+        double magnitude1 = Math.sqrt(vector1x * vector1x + vector1y * vector1y);
+        double magnitude2 = Math.sqrt(vector2x * vector2x + vector2y * vector2y);
+
+        double cosineAngle = dotProduct / (magnitude1 * magnitude2);
+        double angleRadians = Math.acos(Math.max(-1, Math.min(1, cosineAngle)));
+        return Math.toDegrees(angleRadians);
+    }
+
+    private void analyzeBicepCurlForm(Float[][] coordinates) {
+        // Key body landmarks for bicep curl
+        Float[] leftShoulder = coordinates[11];
+        Float[] leftElbow = coordinates[13];
+        Float[] leftWrist = coordinates[15];
+        Float[] rightShoulder = coordinates[12];
+        Float[] rightElbow = coordinates[14];
+        Float[] rightWrist = coordinates[16];
+        Float[] leftHip = coordinates[23];
+        Float[] rightHip = coordinates[24];
+
+        formViolations.clear();
+
+        // Angle calculations
+        double leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
+        double rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
+        double bodyAlignmentAngle = calculateHorizontalAlignment(leftShoulder, rightShoulder, leftHip, rightHip);
+
+        checkBicepCurlFormViolations(leftElbowAngle, rightElbowAngle, bodyAlignmentAngle);
+        updateCurlState(leftElbowAngle, rightElbowAngle);
+        updateUserInterface();
+    }
+
+    private void checkBicepCurlFormViolations(double leftElbowAngle, double rightElbowAngle, double bodyAlignmentAngle) {
+        formViolations.clear();
+
+        // Allow a larger difference for uneven elbows
+        if (Math.abs(leftElbowAngle - rightElbowAngle) > 45) {
+            formViolations.add("Uneven elbow movement");
+        }
+
+        // Allow more torso sway before flagging
+        if (Math.abs(bodyAlignmentAngle) > 20) {
+            formViolations.add("Torso swaying");
+        }
+
+        // Warn against overextension
+        if (leftElbowAngle > 170 || rightElbowAngle > 170) {
+            formViolations.add("Avoid fully extending elbow");
+        }
+
+        // Warn against insufficient contraction
+        if (leftElbowAngle < 45 || rightElbowAngle < 45) {
+            formViolations.add("Ensure full bicep contraction");
+        }
+    }
+
+
+    private void updateCurlState(double leftElbowAngle, double rightElbowAngle) {
+        long currentTime = System.currentTimeMillis();
+
+        // Define angle thresholds for each state
+        boolean isStarting = true;
+        boolean isDescending = leftElbowAngle > 90 && leftElbowAngle < 120 &&
+                rightElbowAngle > 90 && rightElbowAngle < 120;
+        boolean isBottomPosition = leftElbowAngle <= 90 && rightElbowAngle <= 90;
+        boolean isAscending = leftElbowAngle > 90 && leftElbowAngle < 120 &&
+                rightElbowAngle > 90 && rightElbowAngle < 120;
+        boolean isTopPosition = leftElbowAngle >= 120 && rightElbowAngle >= 120;
+
+        // Prevent rapid transitions
+        if (currentTime - lastStateChangeTime < MIN_CURL_DURATION) {
+            return;
+        }
+
+        switch (currentState) {
+            case STARTING:
+                if (isDescending) {
+                    currentState = CurlState.DESCENDING;
+                    lastStateChangeTime = currentTime;
+                }
+                break;
+
+            case DESCENDING:
+                if (isBottomPosition) {
+                    currentState = CurlState.BOTTOM_POSITION;
+                    lastStateChangeTime = currentTime;
+                }
+                break;
+
+            case BOTTOM_POSITION:
+                if (isAscending) {
+                    currentState = CurlState.ASCENDING;
+                    lastStateChangeTime = currentTime;
+                }
+                break;
+
+            case ASCENDING:
+                if (isTopPosition) {
+                    currentState = CurlState.TOP_POSITION;
+                    curlCount++;
+                    totalCurls++;
+                    lastStateChangeTime = currentTime;
+                }
+                break;
+
+            case TOP_POSITION:
+                if (isStarting) {
+                    currentState = CurlState.STARTING;
+                    lastStateChangeTime = currentTime;
+                }
+                break;
+        }
+    }
+
+
+
+    private long lastFeedbackTime = 0;
+    private static final long FEEDBACK_INTERVAL = 10000;
+
+    private void updateUserInterface() {
+        long currentTime = System.currentTimeMillis();
+
+        runOnUiThread(() -> {
+            curlCountBox.setText("Bicep Curls: " + curlCount);
+
+            if (currentTime - lastFeedbackTime >= FEEDBACK_INTERVAL) {
+                if (formViolations.isEmpty()) {
+                    formFeedbackBox.setText("Perfect Form!");
+                    speakText("Perfect form!");
+                    formFeedbackBox.setTextColor(Color.GREEN);
+                } else {
+                    String feedback = "Form Issues:\n" + String.join("\n", formViolations);
+                    speakText(String.join(". ", formViolations));
+                    formFeedbackBox.setText(feedback);
+                    formFeedbackBox.setTextColor(Color.RED);
+                }
+                lastFeedbackTime = currentTime;
+            }
+
+            performanceBox.setText(String.format(
+                    "State: %s\nTotal Curls: %d",
+                    currentState.toString(),
+                    totalCurls
+            ));
+        });
+    }
+
+    private double calculateHorizontalAlignment(Float[] leftShoulder, Float[] rightShoulder,
+                                                Float[] leftHip, Float[] rightHip) {
+        double shoulderAngle = Math.atan2(
+                rightShoulder[1] - leftShoulder[1],
+                rightShoulder[0] - leftShoulder[0]
+        );
+
+        double hipAngle = Math.atan2(
+                rightHip[1] - leftHip[1],
+                rightHip[0] - leftHip[0]
+        );
+
+        return Math.toDegrees(Math.abs(shoulderAngle - hipAngle));
+    }
+
+    private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener() {
         @Override
-        public void onImageAvailable(ImageReader reader)
-        {
+        public void onImageAvailable(ImageReader reader) {
             Image image = null;
-            try
-            {
+            try {
                 image = reader.acquireLatestImage();
 
                 ++i;
 
-
-//                if (image != null) {
-//                    image.close();
-//                    return;
-//                }
-//
-                if (image == null)
-                {
-                    return;
-                }
-
-                if (image != null && modelController.isInferencing)
-                {
-//                    System.out.println("closing");
-                    image.close();
+                if (image == null || (image != null && modelController.isInferencing)) {
+                    if (image != null) image.close();
                     return;
                 }
 
                 modelController.isInferencing = true;
 
-//                System.out.println("processing");
-
-//                int width = image.getWidth();
-//                int height = image.getHeight();
-//
-//                Image.Plane[] planes = image.getPlanes();
-//                if (planes.length < 3) {
-//                    throw new IllegalStateException("Expected 3 planes for FLEX_RGB_888 format");
-//                }
-//
-//                // Get the byte buffers for each plane
-//                ByteBuffer redBuffer = planes[0].getBuffer(); // Red plane
-//                ByteBuffer greenBuffer = planes[1].getBuffer(); // Green plane
-//                ByteBuffer blueBuffer = planes[2].getBuffer(); // Blue plane
-//
-//                // Convert byte buffers to byte arrays
-//                byte[] redData = new byte[redBuffer.remaining()];
-//                byte[] greenData = new byte[greenBuffer.remaining()];
-//                byte[] blueData = new byte[blueBuffer.remaining()];
-//
-//                redBuffer.get(redData);
-//                greenBuffer.get(greenData);
-//                blueBuffer.get(blueData);
-//
-//                // Create an array to hold the pixels in ARGB format
-//                int[] pixels = new int[width * height];
-//
-//                // Iterate over the pixel data and convert RGB to ARGB
-//                int pixelIndex = 0;
-//                for (int i = 0; i < width * height; i++) {
-//                    // Get the RGB values from the byte arrays
-//                    int r = redData[i] & 0xFF;      // Red value from the red plane
-//                    int g = greenData[i] & 0xFF;    // Green value from the green plane
-//                    int b = blueData[i] & 0xFF;     // Blue value from the blue plane
-//
-//                    // Convert to ARGB format (set Alpha to 255 for full opacity)
-//                    pixels[pixelIndex] = (255 << 24) | (r << 16) | (g << 8) | b;
-//
-//                    pixelIndex++;
-//                }
-//
-//                // Create a Bitmap from the pixel data
-//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//                bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
-
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-
-                // Copy the data from the buffer into a byte array
                 byte[] byteArray = new byte[buffer.remaining()];
                 buffer.get(byteArray);
 
-                // Decode the byte array into a Bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(CurlActivity.this);
-                String degreesString = sharedPreferences.getString("orientation", "0");
-
-                System.out.println(degreesString);
-
-                int degrees = Integer.parseInt(degreesString);
-
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, degrees), false);
-
-//                bitmap.recycle();
-
-                // Process the image here
-//                processImage(image);
-            }
-            finally
-            {
-                if (image != null)
-                {
-//                    System.out.println("closing");
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
+            } finally {
+                if (image != null) {
                     image.close();
                 }
             }
@@ -223,78 +305,64 @@ public class CurlActivity extends AppCompatActivity
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_camera);
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
 
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String inferenceModeString = sharedPreferences.getString("inference_mode", "cpu");
+
+        int inferenceMode = inferenceModeString.equals("cpu") ? 0 : 1;
 
         surfaceView = findViewById(R.id.surfaceView);
         overlayView = findViewById(R.id.overlayView);
         imageView = findViewById(R.id.imageView);
-
+        curlCountBox = findViewById(R.id.pushup_count_box);
+        formFeedbackBox = findViewById(R.id.form_feedback_box);
+        performanceBox = findViewById(R.id.performance_box);
         inferenceTimeBox = findViewById(R.id.inference_time_box);
 
         modelController = new ModelController(this, overlayView);
         modelController.isInferencing = false;
-//        modelController.loadModel();
 
         poseLandmarkerHelper = new PoseLandmarkerHelper(
-                0.5f,
-                0.5f,
-                0.5f,
+                0.5f, 0.5f, 0.5f,
                 PoseLandmarkerHelper.MODEL_POSE_LANDMARKER_FULL,
-                PoseLandmarkerHelper.DELEGATE_CPU,
+                inferenceMode,
                 RunningMode.LIVE_STREAM,
                 this,
                 landmarkerListener
         );
 
-        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback()
-        {
+        surfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
-            public void surfaceCreated(@NonNull SurfaceHolder holder)
-            {
+            public void surfaceCreated(@NonNull SurfaceHolder holder) {
                 CameraUtils cameraUtils = new CameraUtils(CurlActivity.this, surfaceView, imageAvailableListener);
                 cameraUtils.startBackgroundThread();
                 cameraUtils.openCamera();
+
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) surfaceView.getLayoutParams();
+                overlayView.setLayoutParams(params);
+                overlayView.requestLayout();
             }
 
             @Override
-            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height)
-            {
-
-            }
+            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {}
 
             @Override
-            public void surfaceDestroyed(@NonNull SurfaceHolder holder)
-            {
-
-            }
+            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {}
         });
 
-        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
-            @Override
-            public void onInit(int status) {
-                if (status == TextToSpeech.SUCCESS) {
-                    // TTS is successfully initialized
-                    int result = textToSpeech.setLanguage(Locale.US);
-                    if (result == TextToSpeech.LANG_MISSING_DATA ||
-                            result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                        System.out.println("Language not supported");
-                    }
-                } else {
-                    System.out.println("Initialization failed");
+        textToSpeech = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int result = textToSpeech.setLanguage(Locale.US);
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    System.out.println("Language not supported");
                 }
+            } else {
+                System.out.println("Initialization failed");
             }
         });
-
     }
 
     @Override
@@ -305,5 +373,4 @@ public class CurlActivity extends AppCompatActivity
         }
         super.onDestroy();
     }
-
 }

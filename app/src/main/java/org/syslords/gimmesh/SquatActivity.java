@@ -166,11 +166,6 @@ public class SquatActivity extends AppCompatActivity {
             formViolations.add("Body not horizontal");
         }
 
-        // Check squat depth
-        if (leftKneeAngle > 160 || rightKneeAngle > 160) {
-            formViolations.add("Not deep enough");
-        }
-
         // Check knee bending
         if (leftKneeAngle < 70 || rightKneeAngle < 70) {
             formViolations.add("Over-bending knees");
