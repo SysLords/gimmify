@@ -356,9 +356,15 @@ public class PushupActivity extends AppCompatActivity
                 // Decode the byte array into a Bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(PushupActivity.this);
+                String degreesString = sharedPreferences.getString("orientation", "0");
+
+                System.out.println(degreesString);
+
+                int degrees = Integer.parseInt(degreesString);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, degrees), false);
 
 //                bitmap.recycle();
 

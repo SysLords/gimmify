@@ -1,5 +1,6 @@
 package org.syslords.gimmesh;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.Image;
@@ -20,6 +21,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.preference.PreferenceManager;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
@@ -80,7 +82,14 @@ public class YogaActivity extends AppCompatActivity
                 // Decode the byte array into a Bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-                Bitmap newBitmap = ModelController.resizeBitmap(bitmap, 224, 224, 90);
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(YogaActivity.this);
+                String degreesString = sharedPreferences.getString("orientation", "0");
+
+                System.out.println(degreesString);
+
+                int degrees = Integer.parseInt(degreesString);
+
+                Bitmap newBitmap = ModelController.resizeBitmap(bitmap, 224, 224, degrees);
 
                 runOnUiThread(new Runnable()
                 {

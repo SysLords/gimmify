@@ -298,8 +298,15 @@ public class SquatActivity extends AppCompatActivity {
 
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(SquatActivity.this);
+                String degreesString = sharedPreferences.getString("orientation", "0");
+
+                System.out.println(degreesString);
+
+                int degrees = Integer.parseInt(degreesString);
+
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, degrees), false);
             } finally {
                 if (image != null) {
                     image.close();

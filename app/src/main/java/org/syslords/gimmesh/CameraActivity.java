@@ -1,5 +1,6 @@
 package org.syslords.gimmesh;
 
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ColorSpace;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
@@ -183,47 +185,15 @@ public class CameraActivity extends AppCompatActivity
                 // Decode the byte array into a Bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-//                Image.Plane[] planes = image.getPlanes();
-//
-//                // The Y (luminance) plane
-//                ByteBuffer yBuffer = planes[0].getBuffer();
-//                // The U (chrominance) plane
-//                ByteBuffer uBuffer = planes[1].getBuffer();
-//                // The V (chrominance) plane
-//                ByteBuffer vBuffer = planes[2].getBuffer();
-//
-//                int ySize = yBuffer.remaining();
-//                int uSize = uBuffer.remaining();
-//                int vSize = vBuffer.remaining();
-//
-//                // Create byte arrays to hold the data
-//                byte[] yBytes = new byte[ySize];
-//                byte[] uBytes = new byte[uSize];
-//                byte[] vBytes = new byte[vSize];
-//
-//                // Read the buffers into the byte arrays
-//                yBuffer.get(yBytes);
-//                uBuffer.get(uBytes);
-//                vBuffer.get(vBytes);
-//
-//                // Convert YUV to RGB
-//                int width = image.getWidth();
-//                int height = image.getHeight();
-//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//
-//                // You can use a library like YuvImage to simplify YUV to Bitmap conversion
-//                YuvImage yuvImage = new YuvImage(yBytes, ImageFormat.NV21, width, height, null);
-//                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                yuvImage.compressToJpeg(new Rect(0, 0, width, height), 100, baos);
-//                byte[] jpegData = baos.toByteArray();
-//                bitmap = BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(CameraActivity.this);
+                String degreesString = sharedPreferences.getString("orientation", "0");
 
+                System.out.println(degreesString);
 
-
-//                modelController.classify(bitmap);
+                int degrees = Integer.parseInt(degreesString);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, degrees), false);
 
 //                bitmap.recycle();
 
