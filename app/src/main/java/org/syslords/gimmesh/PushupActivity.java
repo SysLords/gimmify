@@ -223,7 +223,7 @@ public class PushupActivity extends AppCompatActivity
 //                modelController.classify(bitmap);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 0), false);
 
 //                bitmap.recycle();
 

@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -36,6 +37,7 @@ public class YogaActivity extends AppCompatActivity
     ImageView imageView;
 
     TextView inferenceTimeBox;
+    TextView inferenceResultBox;
 
     PoseLandmarkerHelper poseLandmarkerHelper;
 
@@ -68,8 +70,6 @@ public class YogaActivity extends AppCompatActivity
                     return;
                 }
 
-                modelController.isInferencing = true;
-
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
 
                 // Copy the data from the buffer into a byte array
@@ -97,12 +97,15 @@ public class YogaActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_yoga);
+
 
 
         surfaceView = findViewById(R.id.yoga_preview);
 
         inferenceTimeBox = findViewById(R.id.yoga_inference_time_box);
+        inferenceResultBox = findViewById(R.id.yoga_inference_result_box);
 
         modelController = new ModelController(this, overlayView);
         modelController.isInferencing = false;
@@ -133,5 +136,29 @@ public class YogaActivity extends AppCompatActivity
 
     }
 
+
+    void setClassificationResult(int result)
+    {
+        String[] yogaPoses = {
+                "Utkatakonasana",
+                "Natarajasana",
+                "Trikonasana",
+                "Veerabhadrasana",
+                "Padhahastasana",
+                "Ashwasanchalasana",
+                "Astangasana",
+                "Bhujangasana",
+                "ArdhaChandrasana",
+                "Parvathasana",
+                "BaddhaKonasana",
+                "Vrukshasana",
+                "Dandasana",
+                "Shashangasana",
+                "Ardhachakrasana",
+                "Pranamasana"
+        };
+
+        inferenceResultBox.setText(yogaPoses[result]);
+    }
 
 }

@@ -33,6 +33,7 @@ import android.view.Surface;
 import android.view.SurfaceView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -97,16 +98,13 @@ public class CameraUtils
 
 //        (CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA));
 
-            Size previewSize = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.PRIVATE)[19]; // Get a suitable preview size
-
-
             float deviation = Float.MAX_VALUE;
-            float ideal = (float) surfaceView.getWidth() / surfaceView.getHeight();
+            float ideal = 1f;
             Size best = new Size(500, 500);
 
             String dimension = "";
 
-            for (Size size : camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.PRIVATE)) {
+            for (Size size : camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)) {
                 float ratio = (float) size.getWidth() / size.getHeight();
 
                 if (Math.abs(ratio - ideal) < deviation) {
@@ -118,13 +116,30 @@ public class CameraUtils
                 dimension += "width " + size.getWidth() + " height " + size.getHeight() + "\n";
             }
 
-            int x = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG).length;
-            best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[10];
+//            int x = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG).length;
+//            best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[10];
 //            size = best;
             surfaceView.getHolder().setFixedSize(best.getWidth(), best.getHeight());
+
+            int screenWidth = surfaceView.getWidth();
+            int screenHeight = surfaceView.getHeight();
+            float factor = (float) screenWidth / best.getWidth();
+            int surfaceHeight = (int) (factor * best.getHeight());
+
+            surfaceView.getLayoutParams().height = surfaceHeight;
+            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) surfaceView.getLayoutParams();
+
+            params.setMargins(0, (screenHeight - surfaceHeight) / 2, 0, (screenHeight - surfaceHeight) / 2);
+            params.height = surfaceHeight;
+
+            surfaceView.setLayoutParams(params);
+            surfaceView.requestLayout();
+
 //            s1.getHolder().setFixedSize(best.getWidth(), best.getHeight());
 
             dimension += "chose " + best.getWidth() + " " + best.getHeight() + "\n";
+
+            System.out.println(dimension);
 
             // System.out.println(camera.get(CameraMetadata.REQUEST_AVAILABLE_CAPABILITIES_LOGICAL_MULTI_CAMERA));
 
@@ -180,7 +195,26 @@ public class CameraUtils
 
             CameraManager manager = (CameraManager) context.getSystemService(CAMERA_SERVICE);
             CameraCharacteristics camera = manager.getCameraCharacteristics(lid);
-            Size best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[10];
+
+            float deviation = Float.MAX_VALUE;
+            float ideal = (float) surfaceView.getWidth() / surfaceView.getHeight();
+            Size best = new Size(500, 500);
+
+            String dimension = "";
+
+            for (Size size : camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)) {
+                float ratio = (float) size.getWidth() / size.getHeight();
+
+                if (Math.abs(ratio - ideal) < deviation) {
+                    deviation = Math.abs(ratio - ideal);
+                    best = size;
+                }
+
+                System.out.println("width " + size.getWidth() + " height " + size.getHeight());
+                dimension += "width " + size.getWidth() + " height " + size.getHeight() + "\n";
+            }
+
+//            Size best = camera.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG)[10];
 
             System.out.println("jped sige" + best.getWidth() + " " + best.getHeight());
 

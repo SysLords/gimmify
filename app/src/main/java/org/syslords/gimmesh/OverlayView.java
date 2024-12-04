@@ -207,7 +207,7 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
 
             while (drawingActive)
             {
-                System.out.println("asdasd asd as sdrawing");
+//                System.out.println("asdasd asd as sdrawing");
 
                 if (holder == null)
                 {
@@ -216,7 +216,7 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
 
                 frameStartTime = System.nanoTime();
 
-                System.out.println("drawing");
+//                System.out.println("drawing");
                 Canvas canvas = holder.lockCanvas();
 
                 if (canvas != null)
@@ -288,7 +288,7 @@ public class OverlayView extends SurfaceView implements SurfaceHolder.Callback, 
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
+//                        e.printStackTrace();
                     }
                     finally
                     {

@@ -1,12 +1,10 @@
 package org.syslords.gimmesh;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.os.AsyncTask;
 
 import com.qualcomm.qti.snpe.FloatTensor;
@@ -74,37 +72,68 @@ public class ModelController {
         isInferencing = false;
     }
 
-    public static Bitmap resizeBitmap(Bitmap bitmap, int width, int height) {
+    public static Bitmap resizeBitmap(Bitmap bitmap, int width, int height, int degrees) {
         // Load the bitmap from the given path
 
         // Resize the bitmap to 256x256
         Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
 
+        Bitmap rotatedBitmap;
+
 //        int width = resizedBitmap.getWidth();
 //        int height = resizedBitmap.getHeight();
 
-//        Bitmap rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
-//
-//        // Iterate over every pixel in the original bitmap and map it to the new position in the rotated bitmap
-//        for (int x = 0; x < width; x++) {
-//            for (int y = 0; y < height; y++) {
-//                // Get the pixel from the original bitmap
-//                int pixel = resizedBitmap.getPixel(x, y);
-//
-//                // Set the pixel to the new position in the rotated bitmap
-//                // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
-//                rotatedBitmap.setPixel(y, width - x - 1, pixel);
-//            }
-//        }
+        // Iterate over every pixel in the original bitmap and map it to the new position in the rotated bitmap
 
-        // Optionally recycle the original bitmap if not needed
-//        if (bitmap != null && !bitmap.isRecycled()) {
-//            bitmap.recycle();
-//        }
+        switch (degrees)
+        {
+            case 0:
+                return resizedBitmap;
+            case 180:
+                rotatedBitmap = Bitmap.createBitmap(width, height, resizedBitmap.getConfig());
 
-//        resizedBitmap.recycle();
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        // Get the pixel from the original bitmap
+                        int pixel = resizedBitmap.getPixel(x, y);
 
-        return resizedBitmap;
+                        // Set the pixel to the new position in the rotated bitmap
+                        // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
+                        rotatedBitmap.setPixel(width - x - 1, height - y - 1, pixel);
+                    }
+                }
+                return rotatedBitmap;
+            case 90:
+                rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
+
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        // Get the pixel from the original bitmap
+                        int pixel = resizedBitmap.getPixel(x, y);
+
+                        // Set the pixel to the new position in the rotated bitmap
+                        // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
+                        rotatedBitmap.setPixel(y, width - x - 1, pixel);
+                    }
+                }
+                return rotatedBitmap;
+            case -90:
+                rotatedBitmap = Bitmap.createBitmap(height, width, resizedBitmap.getConfig());
+
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        // Get the pixel from the original bitmap
+                        int pixel = resizedBitmap.getPixel(x, y);
+
+                        // Set the pixel to the new position in the rotated bitmap
+                        // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
+                        rotatedBitmap.setPixel(y, x, pixel);
+                    }
+                }
+            default:
+                return resizedBitmap;
+        }
+
     }
 
     public void classify(final Bitmap bitmap) {
@@ -112,7 +141,7 @@ public class ModelController {
 
             isInferencing = true;
 
-            Bitmap newBitmap = resizeBitmap(bitmap, 224, 224);
+            Bitmap newBitmap = resizeBitmap(bitmap, 224, 224, 90);
 
             bitmap.recycle();
 
@@ -124,11 +153,12 @@ public class ModelController {
     }
 
     @SuppressLint("NewApi")
-    public void onClassificationResult(Float[][] coordinates, long javaExecuteTime) {
+    public void onClassificationResult(Integer selected, long javaExecuteTime) {
 //        System.out.println(javaExecuteTime);
         isInferencing = false;
-        overlayView.drawCoordinates(coordinates);
-        ((CameraActivity) context).inferenceTimeBox.setText(javaExecuteTime + "ms");
+//        overlayView.drawCoordinates(coordinates);
+        ((YogaActivity) context).inferenceTimeBox.setText(javaExecuteTime + "ms");
+        ((YogaActivity) context).setClassificationResult(selected);
 //            view.setJavaExecuteStatistics(javaExecuteTime);
     }
 }

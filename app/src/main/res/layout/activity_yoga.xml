@@ -7,6 +7,17 @@
     android:layout_height="match_parent"
     tools:context=".YogaActivity">
 
+    <SurfaceView
+        android:id="@+id/yoga_preview"
+        android:layout_width="409dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
     <TextView
         android:id="@+id/yoga_inference_time_box"
         android:layout_width="wrap_content"
@@ -22,15 +33,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <SurfaceView
-        android:id="@+id/yoga_preview"
-        android:layout_width="409dp"
-        android:layout_height="732dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <TextView
+        android:id="@+id/yoga_inference_result_box"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="monospace"
+        android:textAlignment="center"
+        android:textColor="#F7FF00"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/yoga_preview"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

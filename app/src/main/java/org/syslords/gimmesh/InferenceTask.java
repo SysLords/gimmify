@@ -13,14 +13,12 @@ import com.qualcomm.qti.snpe.FloatTensor;
 import com.qualcomm.qti.snpe.NeuralNetwork;
 import com.qualcomm.qti.snpe.Tensor;
 
-import java.nio.FloatBuffer;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
+public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
+{
 
     private static final int FLOAT_SIZE = 4;
 
@@ -38,16 +36,20 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
 
     FloatTensor tensor;
 
-    public InferenceTask(NeuralNetwork network, Bitmap image, ModelController modelController, FloatTensor tensor) {
+    public InferenceTask(NeuralNetwork network, Bitmap image, ModelController modelController, FloatTensor tensor)
+    {
         this.modelController = modelController;
         mNeuralNetwork = network;
         mImage = image;
 
         Set<String> inputNames = mNeuralNetwork.getInputTensorsNames();
         Set<String> outputNames = mNeuralNetwork.getOutputTensorsNames();
-        if (inputNames.size() != 1 || outputNames.size() != 1) {
+        if (inputNames.size() != 1 || outputNames.size() != 1)
+        {
             throw new IllegalStateException("Invalid network input and/or output tensors.");
-        } else {
+        }
+        else
+        {
             mInputLayer = inputNames.iterator().next();
             mOutputLayer = outputNames.iterator().next();
         }
@@ -57,7 +59,8 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
     }
 
     @Override
-    protected Float[][] doInBackground(Bitmap... params) {
+    protected Integer doInBackground(Bitmap... params)
+    {
 
         int j = 0;
 
@@ -88,19 +91,42 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
 
         // decode tensor
 
-        for (Map.Entry<String, FloatTensor> output : outputs.entrySet()) {
-            if (output.getKey().equals(mOutputLayer)) {
+        int x = -1;
+
+        for (Map.Entry<String, FloatTensor> output : outputs.entrySet())
+        {
+            if (output.getKey().equals(mOutputLayer))
+            {
                 FloatTensor outputTensor = output.getValue();
 
                 final float[] array = new float[outputTensor.getSize()];
                 outputTensor.read(array, 0, array.length);
 
-                for (int i : tensor.getShape())
+//                for (int i : tensor.getShape())
+//                {
+//                    System.out.println(i);
+//                }
+
+//                System.out.println(" " + array.length);
+
+
+                float max = Float.MIN_VALUE;
+
+                for (int i = 0; i < 16; ++i)
                 {
-                    System.out.println(i);
+                    if (max < array[i])
+                    {
+                        x = i;
+                        max = array[i];
+                    }
                 }
 
-                System.out.println(" " + array.length);
+            }
+
+        }
+
+        return x;
+    }
 
 
 
@@ -183,30 +209,34 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
 //                    result.add(mModel.labels[pair.first]);
 //                    result.add(String.valueOf(pair.second));
 //                }
-            }
-        }
+//        }
+//        }
 
-        releaseTensors(inputs, outputs);
-
-        return coordinates;
-    }
+//        releaseTensors(inputs, outputs);
+//
+//        return coordinates;
 
     @Override
-    protected void onPostExecute(Float[][] coordinates) {
-        super.onPostExecute(coordinates);
-        modelController.onClassificationResult(coordinates, mJavaExecuteTime);
+    protected void onPostExecute(Integer selected)
+    {
+        super.onPostExecute(selected);
+        modelController.onClassificationResult(selected, mJavaExecuteTime);
     }
 
     @SafeVarargs
-    private final void releaseTensors(Map<String, ? extends Tensor>... tensorMaps) {
-        for (Map<String, ? extends Tensor> tensorMap : tensorMaps) {
-            for (Tensor tensor : tensorMap.values()) {
+    private final void releaseTensors(Map<String, ? extends Tensor>... tensorMaps)
+    {
+        for (Map<String, ? extends Tensor> tensorMap : tensorMaps)
+        {
+            for (Tensor tensor : tensorMap.values())
+            {
                 tensor.release();
             }
         }
     }
 
-    float[] loadRgbBitmapAsFloat(Bitmap image) {
+    float[] loadRgbBitmapAsFloat(Bitmap image)
+    {
         final int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getPixels(pixels, 0, image.getWidth(), 0, 0,
                 image.getWidth(), image.getHeight());
@@ -217,8 +247,10 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Float[][]> {
 //        }
 
         final float[] pixelsBatched = new float[pixels.length * 3];
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
+        for (int y = 0; y < image.getHeight(); y++)
+        {
+            for (int x = 0; x < image.getWidth(); x++)
+            {
                 final int idx = y * image.getWidth() + x;
                 final int batchIdx = idx * 3;
                 int pixel = pixels[idx];

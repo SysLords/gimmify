@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
@@ -223,7 +224,7 @@ public class PlankActivity extends AppCompatActivity
 //                modelController.classify(bitmap);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
 
 //                bitmap.recycle();
 
@@ -283,6 +284,11 @@ public class PlankActivity extends AppCompatActivity
                 CameraUtils cameraUtils = new CameraUtils(PlankActivity.this, surfaceView, imageAvailableListener);
                 cameraUtils.startBackgroundThread();
                 cameraUtils.openCamera();
+
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) surfaceView.getLayoutParams();
+
+                overlayView.setLayoutParams(params);
+                overlayView.requestLayout();
             }
 
             @Override

@@ -3,10 +3,12 @@
     <string-array name="inference_modes">
         <item>GPU</item>
         <item>CPU</item>
+        <item>DSP</item>
     </string-array>
 
     <string-array name="inference_mode_values">
         <item>gpu</item>
         <item>cpu</item>
+        <item>dsp</item>
     </string-array>
 </resources>

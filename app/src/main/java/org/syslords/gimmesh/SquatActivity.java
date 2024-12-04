@@ -223,7 +223,7 @@ public class SquatActivity extends AppCompatActivity
 //                modelController.classify(bitmap);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
 
 //                bitmap.recycle();
 
