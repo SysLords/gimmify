@@ -18,5 +18,13 @@
             android:title="Debug Mode"
             android:summary="Enable detailed logging"/>
 
+        <ListPreference
+            android:key="orientation"
+            android:title="Orientation"
+            android:summary="Select orientation"
+            android:entries="@array/orientation_labels"
+            android:entryValues="@array/orientation"
+            android:defaultValue="0" />
+
     </PreferenceCategory>
 </PreferenceScreen>
