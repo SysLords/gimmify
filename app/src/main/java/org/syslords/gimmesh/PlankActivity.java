@@ -107,7 +107,8 @@ public class PlankActivity extends AppCompatActivity
             }
             catch (Exception e)
             {
-                e.printStackTrace();
+                modelController.isInferencing = false;
+//                e.printStackTrace();
             }
         }
     };
@@ -238,52 +239,67 @@ public class PlankActivity extends AppCompatActivity
 
     }
 
-    private void analyzePlankForm(Float[][] coordinates) {
+    private void analyzePlankForm(Float[][] coordinates) throws Exception
+    {
         // Reset form violations
-        formViolations.clear();
+        try
+        {
 
-        // Key landmarks indices
-        int rightShoulderIndex = 12;
-        int rightHipIndex = 24;
-        int rightAnkleIndex = 28;
-        int leftShoulderIndex = 11;
-        int leftHipIndex = 23;
-        int leftAnkleIndex = 27;
+            formViolations.clear();
 
-        // Determine side based on visibility
-        currentSide = coordinates[rightShoulderIndex][1] < coordinates[leftShoulderIndex][1] ? "right" : "left";
+            // Key landmarks indices
+            int rightShoulderIndex = 12;
+            int rightHipIndex = 24;
+            int rightAnkleIndex = 28;
+            int leftShoulderIndex = 11;
+            int leftHipIndex = 23;
+            int leftAnkleIndex = 27;
 
-        // Select landmarks based on current side
-        int shoulderIndex = currentSide.equals("right") ? rightShoulderIndex : leftShoulderIndex;
-        int hipIndex = currentSide.equals("right") ? rightHipIndex : leftHipIndex;
-        int ankleIndex = currentSide.equals("right") ? rightAnkleIndex : leftAnkleIndex;
+            // Determine side based on visibility
+            currentSide = coordinates[rightShoulderIndex][1] < coordinates[leftShoulderIndex][1] ? "right" : "left";
 
-        // Check landmark visibility
-        if (isLandmarkVisible(coordinates[shoulderIndex]) &&
-                isLandmarkVisible(coordinates[hipIndex]) &&
-                isLandmarkVisible(coordinates[ankleIndex])) {
+            // Select landmarks based on current side
+            int shoulderIndex = currentSide.equals("right") ? rightShoulderIndex : leftShoulderIndex;
+            int hipIndex = currentSide.equals("right") ? rightHipIndex : leftHipIndex;
+            int ankleIndex = currentSide.equals("right") ? rightAnkleIndex : leftAnkleIndex;
 
-            // Check horizontal alignment
-            if (checkHorizontalAlignment(
-                    coordinates[shoulderIndex],
-                    coordinates[hipIndex])) {
+            // Check landmark visibility
+            if (isLandmarkVisible(coordinates[shoulderIndex]) &&
+                    isLandmarkVisible(coordinates[hipIndex]) &&
+                    isLandmarkVisible(coordinates[ankleIndex]))
+            {
 
-                // Calculate plank angle
-                double plankAngle = calculateAngle(
+                // Check horizontal alignment
+                if (checkHorizontalAlignment(
                         coordinates[shoulderIndex],
-                        coordinates[hipIndex],
-                        coordinates[ankleIndex]
-                );
+                        coordinates[hipIndex]))
+                {
 
-                // Validate plank form
-                validatePlankForm(plankAngle);
-            } else {
-                formViolations.add("Body not horizontally aligned");
+                    // Calculate plank angle
+                    double plankAngle = calculateAngle(
+                            coordinates[shoulderIndex],
+                            coordinates[hipIndex],
+                            coordinates[ankleIndex]
+                    );
+
+                    // Validate plank form
+                    validatePlankForm(plankAngle);
+                }
+                else
+                {
+                    formViolations.add("Body not horizontally aligned");
+                    holdingPlank = false;
+                }
+            }
+            else
+            {
+                formViolations.add("Ensure full body visibility");
                 holdingPlank = false;
             }
-        } else {
-            formViolations.add("Ensure full body visibility");
-            holdingPlank = false;
+        }
+        catch (Exception e)
+        {
+            throw e;
         }
     }
 
