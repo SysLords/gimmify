@@ -3,6 +3,7 @@ package org.syslords.gimmesh;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.ColorSpace;
 import android.media.Image;
 import android.media.ImageReader;
@@ -24,10 +25,15 @@ import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlankActivity extends AppCompatActivity
 {
+    private long plankStartTime = 0;
+    private boolean holdingPlank = false;
+    private String currentSide = "right";
+    private List<String> formViolations = new ArrayList<>();
 
     ModelController modelController;
 
@@ -37,6 +43,11 @@ public class PlankActivity extends AppCompatActivity
     ImageView imageView;
 
     TextView inferenceTimeBox;
+
+    TextView plankTimerBox;
+    TextView formFeedbackBox;
+    TextView performanceBox;
+
 
     PoseLandmarkerHelper poseLandmarkerHelper;
 
@@ -76,6 +87,7 @@ public class PlankActivity extends AppCompatActivity
 
             try
             {
+                analyzePlankForm(coordinates);
                 modelController.isInferencing = false;
                 overlayView.drawCoordinates(coordinates);
 
@@ -86,6 +98,7 @@ public class PlankActivity extends AppCompatActivity
                     public void run() {
                         // Code to execute on the UI thread
                         inferenceTimeBox.setText(Long.toString(inferenceEnd - inferenceStart) + "ms");
+                        updatePlankUI();
                     }
                 });
 
@@ -177,7 +190,9 @@ public class PlankActivity extends AppCompatActivity
         imageView = findViewById(R.id.imageView);
 
         inferenceTimeBox = findViewById(R.id.inference_time_box);
-
+        plankTimerBox = findViewById(R.id.pushup_count_box);
+        formFeedbackBox = findViewById(R.id.form_feedback_box);
+        performanceBox = findViewById(R.id.performance_box);
         modelController = new ModelController(this, overlayView);
         modelController.isInferencing = false;
 //        modelController.loadModel();
@@ -223,5 +238,127 @@ public class PlankActivity extends AppCompatActivity
 
     }
 
+    private void analyzePlankForm(Float[][] coordinates) {
+        // Reset form violations
+        formViolations.clear();
+
+        // Key landmarks indices
+        int rightShoulderIndex = 12;
+        int rightHipIndex = 24;
+        int rightAnkleIndex = 28;
+        int leftShoulderIndex = 11;
+        int leftHipIndex = 23;
+        int leftAnkleIndex = 27;
+
+        // Determine side based on visibility
+        currentSide = coordinates[rightShoulderIndex][1] < coordinates[leftShoulderIndex][1] ? "right" : "left";
+
+        // Select landmarks based on current side
+        int shoulderIndex = currentSide.equals("right") ? rightShoulderIndex : leftShoulderIndex;
+        int hipIndex = currentSide.equals("right") ? rightHipIndex : leftHipIndex;
+        int ankleIndex = currentSide.equals("right") ? rightAnkleIndex : leftAnkleIndex;
+
+        // Check landmark visibility
+        if (isLandmarkVisible(coordinates[shoulderIndex]) &&
+                isLandmarkVisible(coordinates[hipIndex]) &&
+                isLandmarkVisible(coordinates[ankleIndex])) {
+
+            // Check horizontal alignment
+            if (checkHorizontalAlignment(
+                    coordinates[shoulderIndex],
+                    coordinates[hipIndex])) {
+
+                // Calculate plank angle
+                double plankAngle = calculateAngle(
+                        coordinates[shoulderIndex],
+                        coordinates[hipIndex],
+                        coordinates[ankleIndex]
+                );
+
+                // Validate plank form
+                validatePlankForm(plankAngle);
+            } else {
+                formViolations.add("Body not horizontally aligned");
+                holdingPlank = false;
+            }
+        } else {
+            formViolations.add("Ensure full body visibility");
+            holdingPlank = false;
+        }
+    }
+
+    private boolean isLandmarkVisible(Float[] landmark) {
+        // Assuming landmark is visible if its values are not null and within reasonable range
+        return landmark != null && landmark[0] >= 0 && landmark[0] <= 1 &&
+                landmark[1] >= 0 && landmark[1] <= 1;
+    }
+
+    private boolean checkHorizontalAlignment(Float[] shoulder, Float[] hip) {
+        // Check if vertical distance between shoulder and hip is within a small threshold
+        return Math.abs(shoulder[1] - hip[1]) < 0.1;
+    }
+
+    private void validatePlankForm(double plankAngle) {
+        if (plankAngle > 190) {
+            formViolations.add("Back is too low");
+            holdingPlank = false;
+        } else if (plankAngle < 170) {
+            formViolations.add("Back is too high");
+            holdingPlank = false;
+        } else {
+            // Valid plank position
+            if (!holdingPlank) {
+                plankStartTime = System.currentTimeMillis();
+            }
+            holdingPlank = true;
+        }
+    }
+
+    private double calculateAngle(Float[] point1, Float[] point2, Float[] point3) {
+        // Calculate vectors
+        double vector1x = point1[0] - point2[0];
+        double vector1y = point1[1] - point2[1];
+        double vector2x = point3[0] - point2[0];
+        double vector2y = point3[1] - point2[1];
+
+        // Calculate dot product
+        double dotProduct = (vector1x * vector2x) + (vector1y * vector2y);
+
+        // Calculate magnitudes
+        double magnitude1 = Math.sqrt(vector1x * vector1x + vector1y * vector1y);
+        double magnitude2 = Math.sqrt(vector2x * vector2x + vector2y * vector2y);
+
+        // Calculate cosine of the angle
+        double cosineAngle = dotProduct / (magnitude1 * magnitude2);
+
+        // Convert to degrees and ensure it's always positive
+        double angleRadians = Math.acos(Math.max(-1, Math.min(1, cosineAngle)));
+        return Math.toDegrees(angleRadians);
+    }
+
+    private void updatePlankUI() {
+        // Calculate plank duration
+        long currentTime = System.currentTimeMillis();
+        long elapsedTime = holdingPlank ? (currentTime - plankStartTime) / 1000 : 0;
+
+        // Update plank timer
+        plankTimerBox.setText(String.format("Plank Time: %d sec", elapsedTime));
+
+        // Update form feedback
+        if (formViolations.isEmpty()) {
+            formFeedbackBox.setText("Perfect Plank Form!");
+            formFeedbackBox.setTextColor(Color.GREEN);
+        } else {
+            formFeedbackBox.setText(String.join("\n", formViolations));
+            formFeedbackBox.setTextColor(Color.RED);
+        }
+
+        // Update performance box
+        performanceBox.setText(String.format(
+                "Side: %s\nStatus: %s",
+                currentSide,
+                holdingPlank ? "Holding" : "Invalid"
+        ));
+    }
 
 }
