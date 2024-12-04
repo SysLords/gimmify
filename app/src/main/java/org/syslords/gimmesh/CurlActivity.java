@@ -170,23 +170,23 @@ public class CurlActivity extends AppCompatActivity {
     private void updateCurlState(double leftElbowAngle, double rightElbowAngle) {
         long currentTime = System.currentTimeMillis();
 
-        // Define angle thresholds for each state
-        boolean isStarting = true;
-        boolean isDescending = leftElbowAngle > 90 && leftElbowAngle < 120 &&
-                rightElbowAngle > 90 && rightElbowAngle < 120;
+        // More lenient angle checks
+        boolean isInitialPosition = leftElbowAngle > 120 && rightElbowAngle > 120;
+        boolean isLoweringWeight = leftElbowAngle >= 90 && leftElbowAngle <= 160 &&
+                rightElbowAngle >= 90 && rightElbowAngle <= 160;
         boolean isBottomPosition = leftElbowAngle <= 90 && rightElbowAngle <= 90;
-        boolean isAscending = leftElbowAngle > 90 && leftElbowAngle < 120 &&
-                rightElbowAngle > 90 && rightElbowAngle < 120;
-        boolean isTopPosition = leftElbowAngle >= 120 && rightElbowAngle >= 120;
+        boolean isLiftingWeight = leftElbowAngle >= 90 && leftElbowAngle <= 160 &&
+                rightElbowAngle >= 90 && rightElbowAngle <= 160;
+        boolean isContractedPosition = leftElbowAngle > 120 && rightElbowAngle > 120;
 
-        // Prevent rapid transitions
+        // Prevent rapid transitions and ensure minimum duration between states
         if (currentTime - lastStateChangeTime < MIN_CURL_DURATION) {
             return;
         }
 
         switch (currentState) {
             case STARTING:
-                if (isDescending) {
+                if (isLoweringWeight) {
                     currentState = CurlState.DESCENDING;
                     lastStateChangeTime = currentTime;
                 }
@@ -200,23 +200,24 @@ public class CurlActivity extends AppCompatActivity {
                 break;
 
             case BOTTOM_POSITION:
-                if (isAscending) {
+                if (isLiftingWeight) {
                     currentState = CurlState.ASCENDING;
                     lastStateChangeTime = currentTime;
                 }
                 break;
 
             case ASCENDING:
-                if (isTopPosition) {
+                if (isContractedPosition) {
                     currentState = CurlState.TOP_POSITION;
                     curlCount++;
                     totalCurls++;
                     lastStateChangeTime = currentTime;
+                    speakText("Curl completed!");  // Optional audio feedback
                 }
                 break;
 
             case TOP_POSITION:
-                if (isStarting) {
+                if (isInitialPosition) {
                     currentState = CurlState.STARTING;
                     lastStateChangeTime = currentTime;
                 }
