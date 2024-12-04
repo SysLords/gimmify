@@ -226,21 +226,21 @@ public class PushupActivity extends AppCompatActivity
 
         switch (currentState) {
             case STARTING:
-                if (leftElbowAngle < 110 && rightElbowAngle < 110) {
+                if (leftElbowAngle < 130 && rightElbowAngle < 130) {
                     currentState = PushupState.DESCENDING;
                     lastStateChangeTime = currentTime;
                 }
                 break;
 
             case DESCENDING:
-                if (leftElbowAngle <= 70 && rightElbowAngle <= 70) {
+                if (leftElbowAngle <= 110 && rightElbowAngle <= 110) {
                     currentState = PushupState.BOTTOM_POSITION;
                     lastStateChangeTime = currentTime;
                 }
                 break;
 
             case BOTTOM_POSITION:
-                if (leftElbowAngle > 110 && rightElbowAngle > 110) {
+                if (leftElbowAngle > 130 && rightElbowAngle > 130) {
                     currentState = PushupState.ASCENDING;
                     lastStateChangeTime = currentTime;
                 }

@@ -174,27 +174,27 @@ class PoseLandmarkerHelper(
 //        imageProxy.use { bitmapBuffer.copyPixelsFromBuffer(imageProxy.planes[0].buffer) }
 //        imageProxy.close()
 
-        val matrix = Matrix().apply {
-            // Rotate the frame received from the camera to be in the same direction as it'll be shown
-            postRotate(90f)
-
-            // flip image if user use front camera
-            if (isFrontCamera) {
-                postScale(
-                    -1f,
-                    1f,
-                    imageProxy.width.toFloat(),
-                    imageProxy.height.toFloat()
-                )
-            }
-        }
-        val rotatedBitmap = Bitmap.createBitmap(
-            bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,
-            matrix, true
-        )
+//        val matrix = Matrix().apply {
+//            // Rotate the frame received from the camera to be in the same direction as it'll be shown
+//            postRotate(90f)
+//
+//            // flip image if user use front camera
+//            if (isFrontCamera) {
+//                postScale(
+//                    -1f,
+//                    1f,
+//                    imageProxy.width.toFloat(),
+//                    imageProxy.height.toFloat()
+//                )
+//            }
+//        }
+//        val rotatedBitmap = Bitmap.createBitmap(
+//            bitmapBuffer, 0, 0, bitmapBuffer.width, bitmapBuffer.height,
+//            matrix, true
+//        )
 
         // Convert the input Bitmap object to an MPImage object to run inference
-        val mpImage = BitmapImageBuilder(rotatedBitmap).build()
+        val mpImage = BitmapImageBuilder(imageProxy).build()
 
         detectAsync(mpImage, frameTime)
     }

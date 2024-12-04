@@ -132,7 +132,7 @@ public class ModelController {
 
                         // Set the pixel to the new position in the rotated bitmap
                         // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
-                        rotatedBitmap.setPixel(y, width - x - 1, pixel);
+                        rotatedBitmap.setPixel(height - y - 1, x, pixel);
                     }
                 }
                 return rotatedBitmap;
@@ -146,9 +146,10 @@ public class ModelController {
 
                         // Set the pixel to the new position in the rotated bitmap
                         // 90 degrees counterclockwise: new x is the old y, new y is width - old x - 1
-                        rotatedBitmap.setPixel(y, x, pixel);
+                        rotatedBitmap.setPixel(y, width - x - 1, pixel);
                     }
                 }
+                return rotatedBitmap;
             default:
                 return resizedBitmap;
         }
