@@ -265,7 +265,7 @@ public class PushupActivity extends AppCompatActivity
     }
 
     private long lastFeedbackTime = 0; // Tracks the last feedback time
-    private static final long FEEDBACK_INTERVAL = 10000; // Minimum interval in milliseconds
+    private static final long FEEDBACK_INTERVAL = 5000; // Minimum interval in milliseconds
 
     private void updateUserInterface() {
         long currentTime = System.currentTimeMillis();

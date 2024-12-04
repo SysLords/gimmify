@@ -23,6 +23,9 @@ import com.google.mediapipe.tasks.vision.core.RunningMode;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import android.speech.tts.TextToSpeech;
 
 public class PlankActivity extends AppCompatActivity
 {
@@ -52,6 +55,8 @@ public class PlankActivity extends AppCompatActivity
 
     long inferenceStart;
     long inferenceEnd;
+
+    private TextToSpeech textToSpeech;
 
 
     PoseLandmarkerHelper.LandmarkerListener landmarkerListener = new PoseLandmarkerHelper.LandmarkerListener()
@@ -111,6 +116,12 @@ public class PlankActivity extends AppCompatActivity
             }
         }
     };
+
+    private void speakText(String text) {
+        if (textToSpeech != null) {
+            textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+        }
+    }
 
     private final ImageReader.OnImageAvailableListener imageAvailableListener = new ImageReader.OnImageAvailableListener()
     {
@@ -258,6 +269,22 @@ public class PlankActivity extends AppCompatActivity
             }
         });
 
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    // TTS is successfully initialized
+                    int result = textToSpeech.setLanguage(Locale.US);
+                    if (result == TextToSpeech.LANG_MISSING_DATA ||
+                            result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        System.out.println("Language not supported");
+                    }
+                } else {
+                    System.out.println("Initialization failed");
+                }
+            }
+        });
+
     }
 
     private void analyzePlankForm(Float[][] coordinates) throws Exception
@@ -358,58 +385,75 @@ public class PlankActivity extends AppCompatActivity
         }
     }
 
-private double calculateAngle(Float[] point1, Float[] point2, Float[] point3)
-{
-    // Calculate vectors
-    double vector1x = point1[0] - point2[0];
-    double vector1y = point1[1] - point2[1];
-    double vector2x = point3[0] - point2[0];
-    double vector2y = point3[1] - point2[1];
-
-    // Calculate dot product
-    double dotProduct = (vector1x * vector2x) + (vector1y * vector2y);
-
-    // Calculate magnitudes
-    double magnitude1 = Math.sqrt(vector1x * vector1x + vector1y * vector1y);
-    double magnitude2 = Math.sqrt(vector2x * vector2x + vector2y * vector2y);
-
-    // Calculate cosine of the angle
-    double cosineAngle = dotProduct / (magnitude1 * magnitude2);
-
-    // Convert to degrees and ensure it's always positive
-    double angleRadians = Math.acos(Math.max(-1, Math.min(1, cosineAngle)));
-    return Math.toDegrees(angleRadians);
-}
-
-private void updatePlankUI()
-{
-    // Calculate plank duration
-    long currentTime = System.currentTimeMillis();
-    long elapsedTimeMillis = holdingPlank ? (currentTime - plankStartTime) : 0;
-    totalPlankTime += elapsedTimeMillis;
-    long elapsedTime = holdingPlank ? (currentTime - plankStartTime) / 1000 : 0;
-
-    // Update plank timer
-    plankTimerBox.setText(String.format("Plank Time: %d sec", totalPlankTime / 1000));
-
-    // Update form feedback
-    if (formViolations.isEmpty())
+    private double calculateAngle(Float[] point1, Float[] point2, Float[] point3)
     {
-        formFeedbackBox.setText("Perfect Plank Form!");
-        formFeedbackBox.setTextColor(Color.GREEN);
-    }
-    else
-    {
-        formFeedbackBox.setText(String.join("\n", formViolations));
-        formFeedbackBox.setTextColor(Color.RED);
+        // Calculate vectors
+        double vector1x = point1[0] - point2[0];
+        double vector1y = point1[1] - point2[1];
+        double vector2x = point3[0] - point2[0];
+        double vector2y = point3[1] - point2[1];
+
+        // Calculate dot product
+        double dotProduct = (vector1x * vector2x) + (vector1y * vector2y);
+
+        // Calculate magnitudes
+        double magnitude1 = Math.sqrt(vector1x * vector1x + vector1y * vector1y);
+        double magnitude2 = Math.sqrt(vector2x * vector2x + vector2y * vector2y);
+
+        // Calculate cosine of the angle
+        double cosineAngle = dotProduct / (magnitude1 * magnitude2);
+
+        // Convert to degrees and ensure it's always positive
+        double angleRadians = Math.acos(Math.max(-1, Math.min(1, cosineAngle)));
+        return Math.toDegrees(angleRadians);
     }
 
-    // Update performance box
-    performanceBox.setText(String.format(
-            "Side: %s\nStatus: %s",
-            currentSide,
-            holdingPlank ? "Holding" : "Invalid"
-    ));
-}
+    private long lastFeedbackTime = 0; // Tracks the last feedback time
+    private static final long FEEDBACK_INTERVAL = 5000; // Minimum interval in milliseconds
+
+    private void updatePlankUI()
+    {
+        // Calculate plank duration
+        long currentTime = System.currentTimeMillis();
+        long elapsedTimeMillis = holdingPlank ? (currentTime - plankStartTime) : 0;
+        totalPlankTime += elapsedTimeMillis;
+        long elapsedTime = holdingPlank ? (currentTime - plankStartTime) / 1000 : 0;
+
+        // Update plank timer
+        plankTimerBox.setText(String.format("Plank Time: %d sec", totalPlankTime / 1000));
+
+        // Update form feedback
+        if (currentTime - lastFeedbackTime >= FEEDBACK_INTERVAL) {
+            // Detailed form feedback
+            if (formViolations.isEmpty()) {
+                formFeedbackBox.setText("Perfect Form!");
+                speakText("Perfect form!");
+                formFeedbackBox.setTextColor(Color.GREEN);
+            } else {
+                String feedback = "Form Issues:\n" + String.join("\n", formViolations);
+                speakText(String.join("\n", formViolations));
+                formFeedbackBox.setText(feedback);
+                formFeedbackBox.setTextColor(Color.RED);
+            }
+            // Update the last feedback time
+            lastFeedbackTime = currentTime;
+        }
+
+        // Update performance box
+        performanceBox.setText(String.format(
+                "Side: %s\nStatus: %s",
+                currentSide,
+                holdingPlank ? "Holding" : "Invalid"
+        ));
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
+    }
 
 }

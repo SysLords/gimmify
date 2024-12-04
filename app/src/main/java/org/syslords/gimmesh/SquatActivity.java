@@ -216,7 +216,7 @@ public class SquatActivity extends AppCompatActivity {
     }
 
     private long lastFeedbackTime = 0;
-    private static final long FEEDBACK_INTERVAL = 10000;
+    private static final long FEEDBACK_INTERVAL = 5000;
 
     private void updateUserInterface() {
         long currentTime = System.currentTimeMillis();
