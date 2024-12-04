@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
@@ -416,6 +417,11 @@ public class PushupActivity extends AppCompatActivity
                 CameraUtils cameraUtils = new CameraUtils(PushupActivity.this, surfaceView, imageAvailableListener);
                 cameraUtils.startBackgroundThread();
                 cameraUtils.openCamera();
+
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) surfaceView.getLayoutParams();
+
+                overlayView.setLayoutParams(params);
+                overlayView.requestLayout();
             }
 
             @Override
