@@ -113,16 +113,31 @@ public class PushupActivity extends AppCompatActivity
             }
             catch (Exception e)
             {
+                modelController.isInferencing = false;
                 e.printStackTrace();
             }
         }
     };
-    private double calculateAngle(Float[] point1, Float[] point2, Float[] point3) {
+    private double calculateAngle(Float[] point1, Float[] point2, Float[] point3) throws Exception {
         // Calculate vectors
-        double vector1x = point1[0] - point2[0];
-        double vector1y = point1[1] - point2[1];
-        double vector2x = point3[0] - point2[0];
-        double vector2y = point3[1] - point2[1];
+
+        double vector1x;
+        double vector1y;
+        double vector2x;
+        double vector2y;
+
+
+        try
+        {
+            vector1x = point1[0] - point2[0];
+            vector1y = point1[1] - point2[1];
+            vector2x = point3[0] - point2[0];
+            vector2y = point3[1] - point2[1];
+        }
+        catch (Exception e)
+        {
+            throw new Exception();
+        }
 
         // Calculate dot product
         double dotProduct = (vector1x * vector2x) + (vector1y * vector2y);
@@ -141,7 +156,7 @@ public class PushupActivity extends AppCompatActivity
         return angleDegrees;
     }
 
-    private void analyzePushupForm(Float[][] coordinates) {
+    private void analyzePushupForm(Float[][] coordinates) throws Exception {
         // Key body landmarks
         Float[] leftShoulder = coordinates[11];
         Float[] leftElbow = coordinates[13];
@@ -291,12 +306,6 @@ public class PushupActivity extends AppCompatActivity
 
                 ++i;
 
-
-//                if (image != null) {
-//                    image.close();
-//                    return;
-//                }
-//
                 if (image == null)
                 {
                     return;
@@ -311,51 +320,6 @@ public class PushupActivity extends AppCompatActivity
 
                 modelController.isInferencing = true;
 
-//                System.out.println("processing");
-
-//                int width = image.getWidth();
-//                int height = image.getHeight();
-//
-//                Image.Plane[] planes = image.getPlanes();
-//                if (planes.length < 3) {
-//                    throw new IllegalStateException("Expected 3 planes for FLEX_RGB_888 format");
-//                }
-//
-//                // Get the byte buffers for each plane
-//                ByteBuffer redBuffer = planes[0].getBuffer(); // Red plane
-//                ByteBuffer greenBuffer = planes[1].getBuffer(); // Green plane
-//                ByteBuffer blueBuffer = planes[2].getBuffer(); // Blue plane
-//
-//                // Convert byte buffers to byte arrays
-//                byte[] redData = new byte[redBuffer.remaining()];
-//                byte[] greenData = new byte[greenBuffer.remaining()];
-//                byte[] blueData = new byte[blueBuffer.remaining()];
-//
-//                redBuffer.get(redData);
-//                greenBuffer.get(greenData);
-//                blueBuffer.get(blueData);
-//
-//                // Create an array to hold the pixels in ARGB format
-//                int[] pixels = new int[width * height];
-//
-//                // Iterate over the pixel data and convert RGB to ARGB
-//                int pixelIndex = 0;
-//                for (int i = 0; i < width * height; i++) {
-//                    // Get the RGB values from the byte arrays
-//                    int r = redData[i] & 0xFF;      // Red value from the red plane
-//                    int g = greenData[i] & 0xFF;    // Green value from the green plane
-//                    int b = blueData[i] & 0xFF;     // Blue value from the blue plane
-//
-//                    // Convert to ARGB format (set Alpha to 255 for full opacity)
-//                    pixels[pixelIndex] = (255 << 24) | (r << 16) | (g << 8) | b;
-//
-//                    pixelIndex++;
-//                }
-//
-//                // Create a Bitmap from the pixel data
-//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//                bitmap.setPixels(pixels, 0, width, 0, 0, width, height);
-
 
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
 
@@ -366,47 +330,9 @@ public class PushupActivity extends AppCompatActivity
                 // Decode the byte array into a Bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-//                Image.Plane[] planes = image.getPlanes();
-//
-//                // The Y (luminance) plane
-//                ByteBuffer yBuffer = planes[0].getBuffer();
-//                // The U (chrominance) plane
-//                ByteBuffer uBuffer = planes[1].getBuffer();
-//                // The V (chrominance) plane
-//                ByteBuffer vBuffer = planes[2].getBuffer();
-//
-//                int ySize = yBuffer.remaining();
-//                int uSize = uBuffer.remaining();
-//                int vSize = vBuffer.remaining();
-//
-//                // Create byte arrays to hold the data
-//                byte[] yBytes = new byte[ySize];
-//                byte[] uBytes = new byte[uSize];
-//                byte[] vBytes = new byte[vSize];
-//
-//                // Read the buffers into the byte arrays
-//                yBuffer.get(yBytes);
-//                uBuffer.get(uBytes);
-//                vBuffer.get(vBytes);
-//
-//                // Convert YUV to RGB
-//                int width = image.getWidth();
-//                int height = image.getHeight();
-//                Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//
-//                // You can use a library like YuvImage to simplify YUV to Bitmap conversion
-//                YuvImage yuvImage = new YuvImage(yBytes, ImageFormat.NV21, width, height, null);
-//                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-//                yuvImage.compressToJpeg(new Rect(0, 0, width, height), 100, baos);
-//                byte[] jpegData = baos.toByteArray();
-//                bitmap = BitmapFactory.decodeByteArray(jpegData, 0, jpegData.length);
-
-
-
-//                modelController.classify(bitmap);
 
                 inferenceStart = System.currentTimeMillis();
-                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 0), false);
+                poseLandmarkerHelper.detectLiveStream(ModelController.resizeBitmap(bitmap, 192, 256, 180), false);
 
 //                bitmap.recycle();
 
