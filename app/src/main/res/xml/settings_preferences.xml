@@ -11,7 +11,7 @@
             android:summary="Select processing mode"
             android:entries="@array/inference_modes"
             android:entryValues="@array/inference_mode_values"
-            android:defaultValue="0"/>
+            android:defaultValue="cpu"/>
 
         <SwitchPreference
             android:key="debug_mode"

@@ -182,7 +182,7 @@ public class PlankActivity extends AppCompatActivity
 //        });
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String inferenceModeString = sharedPreferences.getString("inference_mode_values", "cpu");
+        String inferenceModeString = sharedPreferences.getString("inference_mode", "cpu");
 
         System.out.println(inferenceModeString);
 
