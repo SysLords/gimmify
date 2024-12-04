@@ -209,7 +209,6 @@ public class CurlActivity extends AppCompatActivity {
                     curlCount++;
                     totalCurls++;
                     lastStateChangeTime = currentTime;
-                    speakText("Curl completed!");  // Optional audio feedback
                 }
                 break;
 
