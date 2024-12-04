@@ -201,12 +201,12 @@ public class PushupActivity extends AppCompatActivity
 
     private void checkFormViolations(double leftElbowAngle, double rightElbowAngle, double bodyAlignmentAngle) {
         // Check elbow symmetry
-        if (Math.abs(leftElbowAngle - rightElbowAngle) > 20) {
+        if (Math.abs(leftElbowAngle - rightElbowAngle) > 40) {
             formViolations.add("Uneven elbow angles");
         }
 
         // Check body alignment
-        if (Math.abs(bodyAlignmentAngle) > 10) {
+        if (Math.abs(bodyAlignmentAngle) > 40) {
             formViolations.add("Body not horizontal");
         }
 
