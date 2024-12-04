@@ -411,41 +411,45 @@ public class PlankActivity extends AppCompatActivity
     private long lastFeedbackTime = 0; // Tracks the last feedback time
     private static final long FEEDBACK_INTERVAL = 5000; // Minimum interval in milliseconds
 
-    private void updatePlankUI()
-    {
-        // Calculate plank duration
-        long currentTime = System.currentTimeMillis();
-        long elapsedTimeMillis = holdingPlank ? (currentTime - plankStartTime) : 0;
-        totalPlankTime += elapsedTimeMillis;
-        long elapsedTime = holdingPlank ? (currentTime - plankStartTime) / 1000 : 0;
-
-        // Update plank timer
-        plankTimerBox.setText(String.format("Plank Time: %d sec", totalPlankTime / 1000));
-
-        // Update form feedback
-        if (currentTime - lastFeedbackTime >= FEEDBACK_INTERVAL) {
-            // Detailed form feedback
-            if (formViolations.isEmpty()) {
-                formFeedbackBox.setText("Perfect Form!");
-                speakText("Perfect form!");
-                formFeedbackBox.setTextColor(Color.GREEN);
-            } else {
-                String feedback = "Form Issues:\n" + String.join("\n", formViolations);
-                speakText(String.join("\n", formViolations));
-                formFeedbackBox.setText(feedback);
-                formFeedbackBox.setTextColor(Color.RED);
-            }
-            // Update the last feedback time
-            lastFeedbackTime = currentTime;
-        }
-
-        // Update performance box
-        performanceBox.setText(String.format(
-                "Side: %s\nStatus: %s",
-                currentSide,
-                holdingPlank ? "Holding" : "Invalid"
-        ));
+private void updatePlankUI()
+{
+    // Calculate plank duration
+    long currentTime = System.currentTimeMillis();
+    
+    // Only update total plank time if actually holding a plank with correct form
+    if (holdingPlank) {
+        // Calculate the time elapsed since starting the plank
+        long elapsedTimeMillis = currentTime - plankStartTime;
+        totalPlankTime = elapsedTimeMillis / 1000; // Convert to seconds
     }
+
+    // Update plank timer
+    plankTimerBox.setText(String.format("Plank Time: %d sec", totalPlankTime));
+
+    // Update form feedback
+    if (currentTime - lastFeedbackTime >= FEEDBACK_INTERVAL) {
+        // Detailed form feedback
+        if (formViolations.isEmpty()) {
+            formFeedbackBox.setText("Perfect Form!");
+            speakText("Perfect form!");
+            formFeedbackBox.setTextColor(Color.GREEN);
+        } else {
+            String feedback = "Form Issues:\n" + String.join("\n", formViolations);
+            speakText(String.join("\n", formViolations));
+            formFeedbackBox.setText(feedback);
+            formFeedbackBox.setTextColor(Color.RED);
+        }
+        // Update the last feedback time
+        lastFeedbackTime = currentTime;
+    }
+
+    // Update performance box
+    performanceBox.setText(String.format(
+        "Side: %s\nStatus: %s",
+        currentSide,
+        holdingPlank ? "Holding" : "Invalid"
+    ));
+}
 
     @Override
     protected void onDestroy() {
