@@ -207,7 +207,7 @@ public class PushupActivity extends AppCompatActivity
 
         // Check body alignment
         if (Math.abs(bodyAlignmentAngle) > 40) {
-            formViolations.add("Body not horizontal");
+//            formViolations.add("Body not horizontal");
         }
 
         // Check elbow positioning
@@ -216,7 +216,8 @@ public class PushupActivity extends AppCompatActivity
         }
 
         // Check depth
-        if (leftElbowAngle < 70 || rightElbowAngle < 70) {
+        if (leftElbowAngle < 70 || rightElbowAngle < 70)
+        {
             formViolations.add("Not enough depth");
         }
     }
@@ -265,7 +266,7 @@ public class PushupActivity extends AppCompatActivity
     }
 
     private long lastFeedbackTime = 0; // Tracks the last feedback time
-    private static final long FEEDBACK_INTERVAL = 5000; // Minimum interval in milliseconds
+    private static final long FEEDBACK_INTERVAL = 500; // Minimum interval in milliseconds
 
     private void updateUserInterface() {
         long currentTime = System.currentTimeMillis();
