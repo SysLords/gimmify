@@ -75,7 +75,7 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
 //                System.out.println(rgbBitmapAsFloat[i]);
 //        }
 
-        mImage.recycle();
+//        mImage.recycle();
 
         tensor.write(rgbBitmapAsFloat, 0, rgbBitmapAsFloat.length);
 
@@ -86,8 +86,6 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
         final Map<String, FloatTensor> outputs = mNeuralNetwork.execute(inputs);
         final long javaExecuteEnd = SystemClock.elapsedRealtime();
         mJavaExecuteTime = javaExecuteEnd - javaExecuteStart;
-
-        Float[][] coordinates = new Float[17][2];
 
         // decode tensor
 
@@ -114,6 +112,7 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
 
                 for (int i = 0; i < 16; ++i)
                 {
+                    System.out.println(i + " " + array[i]);
                     if (max < array[i])
                     {
                         x = i;
@@ -235,32 +234,27 @@ public class InferenceTask extends AsyncTask<Bitmap, Void, Integer>
         }
     }
 
-    float[] loadRgbBitmapAsFloat(Bitmap image)
-    {
+    float[] loadRgbBitmapAsFloat(Bitmap image) {
         final int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getPixels(pixels, 0, image.getWidth(), 0, 0,
                 image.getWidth(), image.getHeight());
 
-//        for (int i = 0;i < pixels.length;++i)
-//        {
-////            System.out.println(pixels[i]);
-//        }
-
         final float[] pixelsBatched = new float[pixels.length * 3];
-        for (int y = 0; y < image.getHeight(); y++)
-        {
-            for (int x = 0; x < image.getWidth(); x++)
-            {
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
                 final int idx = y * image.getWidth() + x;
                 final int batchIdx = idx * 3;
                 int pixel = pixels[idx];
 
                 float grayscale = ((pixel >> 16) & 0xFF);
-                pixelsBatched[batchIdx] = grayscale;
-                grayscale = ((pixel >> 8) & 0xFF);
-                pixelsBatched[batchIdx + 1] = grayscale;
+                pixelsBatched[batchIdx] = grayscale / 255;
+
+                System.out.println(grayscale);
+
+                grayscale = ((pixel >>  8) & 0xFF);
+                pixelsBatched[batchIdx + 1] = grayscale / 255;
                 grayscale = (pixel & 0xFF);
-                pixelsBatched[batchIdx + 2] = grayscale;
+                pixelsBatched[batchIdx + 2] = grayscale / 255;
             }
         }
         return pixelsBatched;

@@ -7,6 +7,7 @@ import android.media.ImageReader;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.ImageView;
@@ -79,7 +80,24 @@ public class YogaActivity extends AppCompatActivity
                 // Decode the byte array into a Bitmap
                 Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-                modelController.classify(bitmap);
+                Bitmap newBitmap = ModelController.resizeBitmap(bitmap, 224, 224, 90);
+
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        if (i % 5 == 0)
+                        {
+                            imageView.setImageBitmap(newBitmap);
+                        }
+
+                        ++i;
+                    }
+                });
+
+
+                modelController.classify(newBitmap);
 
                 inferenceStart = System.currentTimeMillis();
             }
@@ -106,6 +124,7 @@ public class YogaActivity extends AppCompatActivity
 
         inferenceTimeBox = findViewById(R.id.yoga_inference_time_box);
         inferenceResultBox = findViewById(R.id.yoga_inference_result_box);
+        imageView = findViewById(R.id.yoga_test_image_view);
 
         modelController = new ModelController(this, overlayView);
         modelController.isInferencing = false;
