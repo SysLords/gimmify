@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="inference_modes">
-        <item>GPU</item>
         <item>CPU</item>
+        <item>GPU</item>
         <item>DSP</item>
     </string-array>
 
-    <integer-array name="inference_mode_values">
-        <item>1</item>
-        <item>0</item>
-        <item>2</item>
-    </integer-array>
+    <string-array name="inference_mode_values">
+        <item>cpu</item>
+        <item>gpu</item>
+        <item>dsp</item>
+    </string-array>
 </resources>
