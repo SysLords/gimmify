@@ -1,0 +1,26 @@
+{
+  "name": "Android",
+  "image": "mcr.microsoft.com/devcontainers/android:11",
+
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "11",
+      "installMaven": "false",
+      "installGradle": "true"
+    }
+  },
+
+  "forwardPorts": [8080],
+
+  "postCreateCommand": "sdkmanager --licenses",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "naco-siren.gradle-language",
+        "GitHub.copilot"
+      ]
+    }
+  }
+}
